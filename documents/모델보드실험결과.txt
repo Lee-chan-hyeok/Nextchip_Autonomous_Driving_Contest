@@ -1,0 +1,52 @@
+model 별 NPU inference 
+
+v5n_org_100best
+inference : 4.8ms
+
+v8n_org_100best
+inference time : 6.0~6.6ms
+
+v8n_ghost_100best
+inference : 4.8ms
+
+v8n_ghostp2_100best
+inference : 6.9ms
+
+v8n_ghostp6_100best
+inference : 4.8ms
+
+v5n_ghost(한줄)
+inference time : 6.8~7.2 ms
+
+v8s_ghost(한줄)
+inferenc time : 35.9 ~ 36.5 ms
+
+v8n_ghost(한줄)
+inference time : 10.9~11.3 ms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
