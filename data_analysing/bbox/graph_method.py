@@ -70,7 +70,7 @@ def get_meta_df(true_label_path, pred_label_path, iou_th):
     size_th3 = 50000
     size_th4 = 100000
     
-    column_name = ['file_name', 'class', 'detect_tf', 'iou_tf','class_tf', 'box_size', 'iou', 'conf']
+    column_name = ['file_name', 'class', 'detect_tf', 'size', 'iou_tf','class_tf',  'iou', 'conf']
     result_df = pd.DataFrame(columns= column_name)
 
     for name in true_txt_list:

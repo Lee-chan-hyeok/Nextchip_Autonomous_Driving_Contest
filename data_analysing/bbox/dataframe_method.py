@@ -57,8 +57,8 @@ def get_IoU(true_box_center, pred_box_center):
     return iou, int(true_bbox_area)
     
 
-# true.txt의 line과 pred.txt의 line들을 비교, iou를 기준으로 필터링
-def filtering_by_iou(line_true, line_pred, th):
+# true.txt의 line과 pred.txt의 line들을 비교
+def compare_line_to_line(line_true, line_pred, th):
     class_tf = False    # class 일치 여부
     iou_tf = False      # box 검출 여부
     iou = 0     # box 겹치는 정도
@@ -74,15 +74,15 @@ def filtering_by_iou(line_true, line_pred, th):
     # iou 체크
     iou, true_bbox_area = get_IoU(line_true[1:], line_pred[1:-1])
     #print('iou is ', iou, 'true_bbox is', true_bbox_area)
+    
+    # iou 기준으로 필터링
     if iou > 0:
         if iou > th:
             iou_tf = 'True'
         else:
-            #iou_tf = -1
             iou_tf = 'positive'
 
     else:
-        #iou = -2
         iou_tf = 'not_exist'
 
     # conf는 pred.txt의 마지막 값
@@ -90,12 +90,12 @@ def filtering_by_iou(line_true, line_pred, th):
 
     return [true_bbox_area, iou_tf, class_tf, iou, conf]
 
-def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5):
+def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
     output = [-1, -1, -1, -1, -1]
     output_list = []
 
     # line_true는 true.txt 파일의 한 줄(객체 하나)
-    for line_true in get_info_from_txt(true_file_path):
+    for line_pred in get_info_from_txt(pred_file_path):
         #line_true = [float(item) for item in line_true]
         class_tf = False
         box_tf = False
@@ -107,39 +107,45 @@ def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5):
         filtered_line_list = []
 
         # line_pred는 pred.txt 파일의 객체 하나
-        for line_pred in get_info_from_txt(pred_file_path):
-            # str -> float
-            #line_pred = [float(item) for item in line_pred]
-
-            # 조건 만족하는 line 수집
-            filtered_line_list.append(filtering_by_iou(line_true, line_pred, iou_th))
+        for line_true in get_info_from_txt(true_file_path):
+            filtered_line_list.append(compare_line_to_line(line_pred, line_true, iou_th))
 
         # filtered_line_list에서 conf가 가장 높은것을 output으로
         best_conf = 0
 
         for line in filtered_line_list:
-            print(type(line[1] == 'True'))
-            print(line[1])
-            print(type(line[2] == True))
-            print(line[2])
             if ((line[1] == 'True') & (line[2] == True)):
                 conf_temp = line[-1]
                 if (best_conf < conf_temp):
-                    # output -> size, iou_tf, class_tf, iou, conf
-                    output = line
+                    output = line # [size, iou_tf, class_tf, iou, conf]
 
         # 검출 된 경우 안된 경우
-        # dst_value -> class, detect_tf, size, iou_tf, class_tf, iou, conf
-        if((output[1] == 'True') & (output[2] == True)):
-            output_list.append([cls_dict[line_true[0]], True, *output])
+        # output_list.append(class, detect_tf, size, iou_tf, class_tf, iou, conf)
+        if((output[1] == 'True') & (output[2] == True) & (conf_th < output[-1])):
+        # iou 만족, class 만족, conf 만족
+            output_list.append([cls_dict[line_pred[0]], 'True', *output])
+
+        elif((output[1] == 'positive') & (output[2] == True) & (conf_th < output[-1])):
+        # iou 만족, class 만족, conf 미달
+            output_list.append([cls_dict[line_pred[0]], 'conf_lack', *output])
         
-        elif(): # positive인 경우 생각해보장
-            pass
+        elif((output[1] == 'positive') & (output[2] == True) & (conf_th < output[-1])):
+        # iou 미달, class 만족, conf 만족
+            output_list.append([cls_dict[line_pred[0]], 'iou_lack', *output])
+            # _, size = get_IoU(line_true[1:], line_true[1:])
+            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
+
+        elif((output[1] == 'positive') & (output[2] == True) & (conf_th > output[-1])):
+        # iou 미달, class 만족, conf 미달
+            output_list.append([cls_dict[line_pred[0]], 'both_lack', *output])
+            # _, size = get_IoU(line_true[1:], line_true[1:])
+            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
         
         else:
-            _, size = get_IoU(line_true[1:], line_true[1:])
-            output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
-            pass
+        # d_tf = False -> iou, class 둘 중 하나라도 불만족
+            output_list.append([cls_dict[line_pred[0]], 'False', *output])
+            # _, size = get_IoU(line_true[1:], line_true[1:])
+            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
 
     return output_list
 
