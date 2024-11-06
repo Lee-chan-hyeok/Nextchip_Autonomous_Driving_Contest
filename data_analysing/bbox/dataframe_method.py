@@ -90,12 +90,12 @@ def compare_line_to_line(line_true, line_pred, th):
 
     return [true_bbox_area, iou_tf, class_tf, iou, conf]
 
-def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
+def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
     output = [-1, -1, -1, -1, -1]
     output_list = []
 
     # line_true는 true.txt 파일의 한 줄(객체 하나)
-    for line_pred in get_info_from_txt(pred_file_path):
+    for line_true in get_info_from_txt(true_file_path):
         #line_true = [float(item) for item in line_true]
         class_tf = False
         box_tf = False
@@ -107,8 +107,12 @@ def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0
         filtered_line_list = []
 
         # line_pred는 pred.txt 파일의 객체 하나
-        for line_true in get_info_from_txt(true_file_path):
-            filtered_line_list.append(compare_line_to_line(line_pred, line_true, iou_th))
+        for line_pred in get_info_from_txt(pred_file_path):
+            # str -> float
+            #line_pred = [float(item) for item in line_pred]
+
+            # 조건 만족하는 line 수집
+            filtered_line_list.append(compare_line_to_line(line_true, line_pred, iou_th))
 
         # filtered_line_list에서 conf가 가장 높은것을 output으로
         best_conf = 0
@@ -118,6 +122,64 @@ def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0
                 conf_temp = line[-1]
                 if (best_conf < conf_temp):
                     output = line # [size, iou_tf, class_tf, iou, conf]
+
+        # 검출 된 경우 안된 경우
+        # output_list.append(class, detect_tf, size, iou_tf, class_tf, iou, conf)
+        if((output[1] == 'True') & (output[2] == True) & (conf_th < output[-1])):
+        # iou 만족, class 만족, conf 만족
+            output_list.append([cls_dict[line_true[0]], 'True', *output])
+
+        elif((output[1] == 'positive') & (output[2] == True)):
+        # iou 만족, class 만족, conf 미달
+            output_list.append([cls_dict[line_true[0]], 'conf_lack', *output])
+        
+        elif((output[1] == 'positive') & (output[2] == True) & (conf_th < output[-1])):
+        # iou 미달, class 만족, conf 만족
+            output_list.append([cls_dict[line_true[0]], 'iou_lack', *output])
+            # _, size = get_IoU(line_true[1:], line_true[1:])
+            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
+
+        elif((output[1] == 'positive') & (output[2] == True) & (conf_th > output[-1])):
+        # iou 미달, class 만족, conf 미달
+            output_list.append([cls_dict[line_true[0]], 'both_lack', *output])
+            # _, size = get_IoU(line_true[1:], line_true[1:])
+            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
+        
+        else:
+        # d_tf = False -> iou, class 둘 중 하나라도 불만족
+            output_list.append([cls_dict[line_true[0]], 'False', *output])
+            # _, size = get_IoU(line_true[1:], line_true[1:])
+            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
+
+    return output_list
+
+def ftf_by_pred(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
+    output = [-1, -1, -1, -1, -1]
+    output_list = []
+
+    # line_pred는 pred.txt 파일의 한 줄(객체 하나)
+    for line_pred in get_info_from_txt(pred_file_path):
+        class_tf = False
+        box_tf = False
+        size = 0
+        conf = 0
+        iou = 0
+
+        # pred.txt에서 검출된 line들의 list
+        result_list = []
+
+        # line_true는 true.txt 파일의 객체 하나
+        for line_true in get_info_from_txt(true_file_path):
+            result_list.append(compare_line_to_line(line_true, line_pred, iou_th))
+
+        # filtered_line_list에서 conf가 가장 높은것을 output으로
+        best_conf = 0
+
+        for result in result_list:
+            if ((result[1] == 'True') & (result[2] == True)):
+                conf_temp = result[-1]
+                if (best_conf < conf_temp):
+                    output = result # [size, iou_tf, class_tf, iou, conf]
 
         # 검출 된 경우 안된 경우
         # output_list.append(class, detect_tf, size, iou_tf, class_tf, iou, conf)
@@ -148,66 +210,3 @@ def compare_file_to_file(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0
             # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
 
     return output_list
-
-def check_result(gt_path, pred_path):
-    gt_line = []
-    pred_line = []
-    gt_img_path = gt_path.replace('labels', 'images')[:-3] + 'jpg'
-    gt_img = cv2.imread(gt_img_path, cv2.IMREAD_COLOR)
-
-    with open(gt_path, 'r') as gt:
-        for line in gt:
-            gt_line.append(line)
-            cls, center_x, center_y, width, height = line.split(' ')
-            center_x = float(center_x)
-            center_y = float(center_y)
-            width = float(width)
-            height = float(height)
-            #print(center_x, center_y, width, height)
-            pt1 = (int(1280*(center_x - 0.5*width)), int(720*(center_y - 0.5*height)))
-            pt2 = (int(1280*(center_x + 0.5*width)), int(720*(center_y + 0.5*height)))
-            #print(pt1, pt2)
-            cv2.rectangle(gt_img, pt1, pt2, (0, 0, 255), 4)
-
-    pred_img_path = pred_path.replace('labels', 'images')[:-3] + 'jpg'
-    with open(pred_path, 'r') as gt:
-        for line in gt:
-            pred_line.append(line)
-            cls, center_x, center_y, width, height = line.split(' ')[:-1]
-            center_x = float(center_x)
-            center_y = float(center_y)
-            width = float(width)
-            height = float(height)
-            #print(center_x, center_y, width, height)
-            pt1 = (int(1280*(center_x - 0.5*width)), int(720*(center_y - 0.5*height)))
-            pt2 = (int(1280*(center_x + 0.5*width)), int(720*(center_y + 0.5*height)))
-            #print(pt1, pt2)
-            cv2.rectangle(gt_img, pt1, pt2, (255, 0, 0), 1)
-
-    # 10000size box sample, black line
-    #cv2.rectangle(gt_img, (400, 500), (500, 600), (0, 0, 0), 2)
-    
-    cv2.imshow('gt_img', gt_img)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-
-def draw_box(gt_txt_path, idx, img_size):
-    # img path
-    gt_img_path = gt_txt_path.replace('labels', 'images')
-    gt_img_path = gt_img_path.replace('txt', 'jpg')
-    gt_img = cv2.imread(gt_img_path, cv2.IMREAD_COLOR)
-    #cv2.imshow('gt_img', gt_img)
-    #cv2.waitKey()
-
-    # read txt and cord convert
-    info = get_info_from_txt(gt_txt_path)
-    info = [float(item) for item in info[idx]]
-    center_cord = info[1:]
-    center_cord.extend(img_size)
-    box_cord = coordinate_conveter(*center_cord)
-
-    # draw
-    cv2.rectangle(gt_img, tuple(box_cord[:2]), tuple(box_cord[-2:]), (255, 255, 0), 2)
-    cv2.imshow('gt_img', gt_img)
-    cv2.waitKey()
-    cv2.destroyAllWindows()

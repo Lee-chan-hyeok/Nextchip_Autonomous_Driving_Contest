@@ -74,7 +74,7 @@ def get_meta_df(true_label_path, pred_label_path, iou_th):
     result_df = pd.DataFrame(columns= column_name)
 
     for name in true_txt_list:
-        out_list = dataframe_method.compare_file_to_file(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th)
+        out_list = dataframe_method.ftf_by_true(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th)
         for out in out_list:
             out.insert(0, name)
             result_df.loc[len(result_df)] = out
