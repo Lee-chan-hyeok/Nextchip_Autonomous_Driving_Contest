@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-import dataframe_method
+import method_dataframe
 
 def make_histo_list(gt_label_path):
     file_list = os.listdir(gt_label_path)
@@ -73,10 +73,20 @@ def get_meta_df(true_label_path, pred_label_path, iou_th):
     column_name = ['file_name', 'class', 'detect_tf', 'size', 'iou_tf','class_tf',  'iou', 'conf']
     result_df = pd.DataFrame(columns= column_name)
 
+    process_count = 0
+
+    # dir_to_dir
     for name in true_txt_list:
-        out_list = dataframe_method.ftf_by_true(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th)
+        out_list = method_dataframe.ftf_by_true(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th)
+        #print(f'out_list num of {name} is', len(out_list))
+        #print(out_list)
+        #return
         for out in out_list:
             out.insert(0, name)
             result_df.loc[len(result_df)] = out
+        
+        process_count = process_count + 1
+        if(process_count % 1000 == 0):
+            print('progress is', (process_count / len(true_txt_list) * 100))
 
     return result_df

@@ -1,5 +1,5 @@
 import cv2
-import dataframe_method
+import method_dataframe
 
 def check_result(gt_path, pred_path):
     gt_line = []
@@ -54,11 +54,11 @@ def draw_box(gt_txt_path, idx, img_size):
     #cv2.waitKey()
 
     # read txt and cord convert
-    info = dataframe_method.get_info_from_txt(gt_txt_path)
+    info = method_dataframe.get_info_from_txt(gt_txt_path)
     info = [float(item) for item in info[idx]]
     center_cord = info[1:]
     center_cord.extend(img_size)
-    box_cord = dataframe_method.coordinate_conveter(*center_cord)
+    box_cord = method_dataframe.coordinate_conveter(*center_cord)
 
     # draw
     cv2.rectangle(gt_img, tuple(box_cord[:2]), tuple(box_cord[-2:]), (255, 255, 0), 2)
