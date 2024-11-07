@@ -104,7 +104,7 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
         iou = 0
 
         # pred.txt에서 iou > th를 만족하는 line의 리스트 생성
-        filtered_line_list = []
+        compare_list = []
 
         # line_pred는 pred.txt 파일의 객체 하나
         for line_pred in get_info_from_txt(pred_file_path):
@@ -112,16 +112,27 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
             #line_pred = [float(item) for item in line_pred]
 
             # 조건 만족하는 line 수집
-            filtered_line_list.append(compare_line_to_line(line_true, line_pred, iou_th))
+            compare_list.append(compare_line_to_line(line_true, line_pred, iou_th))
 
         # filtered_line_list에서 conf가 가장 높은것을 output으로
         best_conf = 0
+        iou_list = [item[1] for item in compare_list]
+        # compare_list에서 iou가 모두 not_exist인 경우
 
-        for line in filtered_line_list:
+        # compare_list에서 iou가 0 이상인게 있는 경우
+        if(('True' in iou_list) & ('positive' in iou_list)):
+            pass
+        elif('positive' in iou_list):
+            pass
+        for line in compare_list:
             if ((line[1] == 'True') & (line[2] == True)):
-                conf_temp = line[-1]
-                if (best_conf < conf_temp):
+                if (best_conf < line[-1]):
                     output = line # [size, iou_tf, class_tf, iou, conf]
+            elif((line[1] == 'positivie') & (line[2] == True)):
+                if(best_conf < line[-1]):
+                    output = line
+            else:
+                output = line
 
         # 검출 된 경우 안된 경우
         # output_list.append(class, detect_tf, size, iou_tf, class_tf, iou, conf)
