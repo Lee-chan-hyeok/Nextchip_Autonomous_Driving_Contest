@@ -6,6 +6,9 @@ inference : 4.8ms
 v8n_org_100best
 inference time : 6.0~6.6ms
 
+v8s_org_100best
+inference time : 16.8~17ms
+
 v8n_ghost_100best
 inference : 4.8ms
 
