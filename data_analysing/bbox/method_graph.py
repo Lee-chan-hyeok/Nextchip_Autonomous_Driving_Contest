@@ -38,7 +38,7 @@ def rename_files(folder_path):
     else:
         print(f'{check_name} is in the folder, do not excute renaming')
 
-def get_meta_df(true_label_path, pred_label_path, iou_th):
+def get_meta_df(true_label_path, pred_label_path, iou_th, conf_th= 0.1):
     area1 = []
     area2 = []
     area3 = []
@@ -77,7 +77,7 @@ def get_meta_df(true_label_path, pred_label_path, iou_th):
 
     # dir_to_dir
     for name in true_txt_list:
-        out_list = method_dataframe.ftf_by_true(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th)
+        out_list = method_dataframe.ftf_by_true(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th, conf_th)
         #print(f'out_list num of {name} is', len(out_list))
         #print(out_list)
         #return
@@ -87,6 +87,6 @@ def get_meta_df(true_label_path, pred_label_path, iou_th):
         
         process_count = process_count + 1
         if(process_count % 1000 == 0):
-            print('progress is', (process_count / len(true_txt_list) * 100))
+            print(f'progress is {round((process_count / len(true_txt_list) * 100), 2)}%')
 
     return result_df
