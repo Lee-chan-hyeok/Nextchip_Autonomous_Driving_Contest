@@ -1,6 +1,7 @@
 import os
 import cv2
 import glob
+import pandas as pd
 
 # global
 cls_dict = {0: 'per',
@@ -125,18 +126,21 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
         
         for line in compare_list:
             if(('True' not in iou_tf_list) & ('positive' not in iou_tf_list)):
-                output_list.append([cls_dict[line_true[0]], 'False', -100, 'not_exist', -100, -100, -1])
+                _, size = get_IoU(line_true[1:], line_true[1:])
+                output_list.append([cls_dict[line_true[0]], 'False', size, 'not_exist', -100, -100, -1])
 
             elif(('True' not in iou_tf_list) & ('positive' in iou_tf_list)): # list엔 positive만 존재
                 best_conf = 0
                 if (True in cls_tf_list): # postive만 존재, cls_tf = True 존재
                     for line in compare_list:
                         if((best_conf < line[-1]) & (line[2] == True)):
+                            best_conf = line[-1]
                             output = line
 
                 else: # positive만 존재하지만 cls_tf = True가 없음
                     for line in compare_list:
                         if(best_conf < line[-1]):
+                            best_conf = line[-1]
                             output = line
 
                 output_list.append([cls_dict[line_true[0]], 'only_pos', *output])
@@ -145,8 +149,16 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
                 best_conf = 0
                 for line in compare_list:
                     if(best_conf < line[-1]):
+                        best_conf = line[-1]
                         output = line
-                    output_list.append([cls_dict[line_true[0]], 'True', *output])
+
+                    if(conf_th <= best_conf):
+                        output_list.append([cls_dict[line_true[0]], 'True', *output])
+                    elif(conf_th > best_conf):
+                        output_list.append([cls_dict[line_true[0]], 'lack_conf', *output])
+                    else:
+                        pass
+                    
                 
             else:
                 print('check check check compare_list Uhaha\n')
@@ -224,7 +236,7 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
     # output -> [class, detect_tf, size, iou_tf, class_tf, iou, conf]
     return output_list
 
-def ftf_by_pred(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
+def ftf_by_pred(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.1):
     output = [-1, -1, -1, -1, -1]
     output_list = []
 
@@ -281,3 +293,17 @@ def ftf_by_pred(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
             # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
 
     return output_list
+
+def get_ratio(txt_dir):
+    name_list = os.listdir(txt_dir)
+
+    column_name = ['file_name', 'class', 'size']
+    return_df = pd.DataFrame(columns = column_name)
+    for name in name_list:
+        file_path = os.path.join(txt_dir, name)
+        line_list = get_info_from_txt(file_path)
+        for line in line_list:
+            _, size = get_IoU(line[1:], line[1:])
+            return_df.loc[len(return_df)] = [name, cls_dict[line[0]], size]
+    
+    return return_df
