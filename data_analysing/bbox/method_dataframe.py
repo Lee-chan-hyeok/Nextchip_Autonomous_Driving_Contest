@@ -96,10 +96,9 @@ def compare_line_to_line(line_true, line_pred, iou_th, size= (1280, 720)):
     # conf는 pred.txt의 마지막 값
     conf = line_pred[-1]
 
-    return [true_bbox_size, iou_tf, class_tf, iou, conf]
+    return [int(true_bbox_size), iou_tf, class_tf, cls_dict[line_pred[0]], iou, conf]
 
 def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
-    output = [-1, -1, -1, -1, -1]
     detect_list = []
 
     # line_true는 true.txt 파일의 한 줄(객체 하나)
@@ -118,65 +117,84 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
             # 조건 만족하는 line 수집
             compare_list.append(compare_line_to_line(line_true, line_pred, iou_th))
 
-        print('-----------------len is', len(compare_list), '-----------------')
-        #for item in compare_list:
-        #    print(item)
-
-        # compare_list에서 conf가 가장 높은것을 output으로
-        # best_conf = 0
+        check_list = []
         iou_tf_list = [item[1] for item in compare_list]
-        cls_tf_list = [item[2] for item in compare_list]
-        print('num is', len(iou_tf_list), len(cls_tf_list))
-        #print(iou_tf_list, '\n', cls_tf_list)
-        # print('compare_list num is', len(compare_list))
 
-        # compare_list에서 iou가 0 이상인게 있는 경우
-        # compare_list에서 iou가 모두 not_exist인 경우
-        # output -> [class, detect_tf, size, iou_tf, class_tf, iou, conf]
-        # print('len(output_list) before for', len(output_list))
-        
-        for line in compare_list:
-            if(('True' not in iou_tf_list) & ('positive' not in iou_tf_list)):
-                # _, size = get_IoU(line_true[1:], line_true[1:])
-                size = get_size(*line[1:], (1280, 720))
-                detect_list.append([cls_dict[line_true[0]], 'False', size, 'not_exist', -100, -100, -1])
+        result_line = []
 
-            elif(('True' not in iou_tf_list) & ('positive' in iou_tf_list)): # list엔 positive만 존재
+        if(('True' not in iou_tf_list) & ('positive' not in iou_tf_list)):
+            size = get_size(*line_true[1:], (1280, 720))
+            result_line = [cls_dict[line_true[0]], 'False', size, 'not_exist', 0, 0, -1, -1]
+
+        elif(('True' not in iou_tf_list) & ('positive' in iou_tf_list)):
+            # best_conf = 0            
+            # 체크할 인덱스 수집
+            for idx in range(len(compare_list)):
+                item = compare_list[idx]
+                if(item[1] == 'positive'):
+                    check_list.append(int(idx))
+            
+            cls_tf_list = []
+            for idx in check_list:
+                item = compare_list[idx]
+                cls_tf_list.append(item[2])
+
+            if(True in cls_tf_list):
                 best_conf = 0
-                if (True in cls_tf_list): # postive만 존재, cls_tf = True 존재
-                    for line in compare_list:
-                        if((best_conf < line[-1]) & (line[2] == True)):
-                            best_conf = line[-1]
-                            output = line
-
-                else: # positive만 존재하지만 cls_tf = True가 없음
-                    for line in compare_list:
-                        if(best_conf < line[-1]):
-                            best_conf = line[-1]
-                            output = line
-
-                detect_list.append([cls_dict[line_true[0]], 'only_pos', *output])
-
-            elif('True' in iou_tf_list):     # pos는 in or not in 상태
-                best_conf = 0
-                for line in compare_list:
+                for idx in check_list:
+                    line = compare_list[idx]
+                    if((line[2] == True) & (best_conf < line[-1])):
+                        best_conf = line[-1]
+                        result_line = [cls_dict[line_true[0]], 'pos_clsT', *line]
+            else:
+                for idx in check_list:
+                    best_conf = 0
+                    line = compare_list[idx]
                     if(best_conf < line[-1]):
                         best_conf = line[-1]
-                        output = line
+                        result_line = [cls_dict[line_true[0]], 'pos_clsF', *line]
 
-                    if(conf_th <= best_conf):
-                        detect_list.append([cls_dict[line_true[0]], 'True', *output])
-                    elif(conf_th > best_conf):
-                        detect_list.append([cls_dict[line_true[0]], 'lack_conf', *output])
-                    else:
-                        pass
-                    
-                
+        elif('True' in iou_tf_list):
+            # best_conf = 0
+
+            # 체크할 인덱스 수집
+            for idx in range(len(compare_list)):
+                item = compare_list[idx]
+                if(item[1] == 'True'):
+                    check_list.append(int(idx))
+            
+            cls_tf_list = []
+            for idx in check_list:
+                item = compare_list[idx]
+                cls_tf_list.append(item[2])
+
+            if(True in cls_tf_list):
+                best_conf = 0
+                for idx in check_list:
+                    line = compare_list[idx]
+                    if((line[2] == True) & (best_conf < line[-1])):
+                        best_conf = line[-1]
+                        temp_line = line
+
+                if(conf_th < best_conf):
+                    result_line = [cls_dict[line_true[0]], 'Detect', *temp_line]
+                else:
+                    result_line = [cls_dict[line_true[0]], 'conf_lack', *temp_line]
+
             else:
+                best_conf = 0
+                for idx in check_list:
+                    line = compare_list[idx]
+                    if(best_conf < line[-1]):
+                        best_conf = line[-1]
+                        result_line = [cls_dict[line_true[0]], 'Detect_clsF', *line]
+
+        else:
                 print('check check check compare_list Uhaha\n')
                 print(compare_list)
 
-    # output -> [class, detect_tf, size, iou_tf, class_tf, iou, conf]
+        detect_list.append(result_line)
+
     return detect_list
 
 def ftf_by_pred(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.1):
@@ -302,7 +320,7 @@ def get_meta_df(true_label_path, pred_label_path, iou_th, conf_th= 0.1):
     size_th3 = 50000
     size_th4 = 100000
     
-    column_name = ['file_name', 'class', 'detect_tf', 'size', 'iou_tf','class_tf',  'iou', 'conf']
+    column_name = ['file_name', 'class', 'dt_condition', 'size', 'iou_tf','class_tf', 'pred_cls',  'iou', 'conf']
     result_df = pd.DataFrame(columns= column_name)
 
     process_count = 0
@@ -315,10 +333,13 @@ def get_meta_df(true_label_path, pred_label_path, iou_th, conf_th= 0.1):
         #return
         for out in out_list:
             out.insert(0, name)
+            # print(out)
             result_df.loc[len(result_df)] = out
         
         process_count = process_count + 1
         if(process_count % 1000 == 0):
             print(f'progress is {round((process_count / len(true_txt_list) * 100), 2)}%')
+
+    print(f'progress is {round((process_count / len(true_txt_list) * 100), 2)}%')
 
     return result_df
