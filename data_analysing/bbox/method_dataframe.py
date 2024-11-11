@@ -288,7 +288,7 @@ def get_ratio(txt_dir):
     
     return return_df
 
-def get_meta_df(true_label_path, pred_label_path, iou_th, conf_th= 0.1):
+def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
     area1 = []
     area2 = []
     area3 = []

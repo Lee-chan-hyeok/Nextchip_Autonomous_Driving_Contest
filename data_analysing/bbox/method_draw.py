@@ -61,12 +61,13 @@ def draw_box(gt_txt_path, idx_list):
     for idx in idx_list:
         line = [float(item) for item in info[idx]]
         center_cord = line[1:]
-        center_cord.extend(img_size)
+        center_cord.append(img_size)
+        print(center_cord)
         box_cord = method_dataframe.coordinate_conveter(*center_cord)
         cv2.rectangle(gt_img, tuple(box_cord[:2]), tuple(box_cord[2:]), (0, 255, 0), 2)
 
     # draw
-    gt_img_resize = cv2.resize(gt_img, (640, 384))
+    gt_img_resize = cv2.resize(gt_img, (1280, 720))
     cv2.imshow('gt_img', gt_img_resize)
     cv2.waitKey()
     cv2.destroyAllWindows()
