@@ -168,8 +168,8 @@ def make_compare_graph(x, y1, y2, x_title, y_title, Title):
     width = 0.4
 
     # 그래프 그리기
-    plt.bar(x - width/2, y1, width, label='v5n', color='skyblue')
-    plt.bar(x + width/2, y2, width, label='v8n', color='salmon')
+    plt.bar(x - width/2, y1, width, label='v8s_P2G', color='skyblue')
+    plt.bar(x + width/2, y2, width, label='v8s_org', color='salmon')
 
     # 라벨 및 제목 추가
     # plt.xlabel('Class')
