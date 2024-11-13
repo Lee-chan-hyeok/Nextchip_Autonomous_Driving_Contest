@@ -99,7 +99,7 @@ def compare_line_to_line(line_true, line_pred, iou_th, size= (1280, 720)):
     return [int(true_bbox_size), iou_tf, class_tf, cls_dict[line_pred[0]], iou, conf]
 
 def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
-    detect_list = []
+    detect_condition_list = []
 
     # line_true는 true.txt 파일의 한 줄(객체 하나)
     for line_true in get_info_from_txt(true_file_path):
@@ -120,11 +120,11 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
         check_list = []
         iou_tf_list = [item[1] for item in compare_list]
 
-        result_line = []
+        detect_condition = []
 
         if(('True' not in iou_tf_list) & ('positive' not in iou_tf_list)):
             size = get_size(*line_true[1:], (1280, 720))
-            result_line = [cls_dict[line_true[0]], 'False', size, 'not_exist', 0, 0, -1, -1]
+            detect_condition = [cls_dict[line_true[0]], 'False', size, 'not_exist', 0, 0, -1, -1]
 
         elif(('True' not in iou_tf_list) & ('positive' in iou_tf_list)):
             # best_conf = 0            
@@ -145,14 +145,14 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
                     line = compare_list[idx]
                     if((line[2] == True) & (best_conf < line[-1])):
                         best_conf = line[-1]
-                        result_line = [cls_dict[line_true[0]], 'pos_clsT', *line]
+                        detect_condition = [cls_dict[line_true[0]], 'pos_clsT', *line]
             else:
                 for idx in check_list:
                     best_conf = 0
                     line = compare_list[idx]
                     if(best_conf < line[-1]):
                         best_conf = line[-1]
-                        result_line = [cls_dict[line_true[0]], 'pos_clsF', *line]
+                        detect_condition = [cls_dict[line_true[0]], 'pos_clsF', *line]
 
         elif('True' in iou_tf_list):
             # best_conf = 0
@@ -177,9 +177,9 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
                         temp_line = line
 
                 if(conf_th < best_conf):
-                    result_line = [cls_dict[line_true[0]], 'Detect', *temp_line]
+                    detect_condition = [cls_dict[line_true[0]], 'Detect', *temp_line]
                 else:
-                    result_line = [cls_dict[line_true[0]], 'conf_lack', *temp_line]
+                    detect_condition = [cls_dict[line_true[0]], 'conf_lack', *temp_line]
 
             else:
                 best_conf = 0
@@ -187,73 +187,15 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
                     line = compare_list[idx]
                     if(best_conf < line[-1]):
                         best_conf = line[-1]
-                        result_line = [cls_dict[line_true[0]], 'Detect_clsF', *line]
+                        detect_condition = [cls_dict[line_true[0]], 'Detect_clsF', *line]
 
         else:
                 print('check check check compare_list Uhaha\n')
                 print(compare_list)
 
-        detect_list.append(result_line)
+        detect_condition_list.append(detect_condition)
 
-    return detect_list
-
-def ftf_by_pred(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.1):
-    output = [-1, -1, -1, -1, -1]
-    output_list = []
-
-    # line_pred는 pred.txt 파일의 한 줄(객체 하나)
-    for line_pred in get_info_from_txt(pred_file_path):
-        class_tf = False
-        box_tf = False
-        size = 0
-        conf = 0
-        iou = 0
-
-        # pred.txt에서 검출된 line들의 list
-        result_list = []
-
-        # line_true는 true.txt 파일의 객체 하나
-        for line_true in get_info_from_txt(true_file_path):
-            result_list.append(compare_line_to_line(line_true, line_pred, iou_th))
-
-        # filtered_line_list에서 conf가 가장 높은것을 output으로
-        best_conf = 0
-
-        for result in result_list:
-            if ((result[1] == 'True') & (result[2] == True)):
-                conf_temp = result[-1]
-                if (best_conf < conf_temp):
-                    output = result # [size, iou_tf, class_tf, iou, conf]
-
-        # 검출 된 경우 안된 경우
-        # output_list.append(class, detect_tf, size, iou_tf, class_tf, iou, conf)
-        if((output[1] == 'True') & (output[2] == True) & (conf_th < output[-1])):
-        # iou 만족, class 만족, conf 만족
-            output_list.append([cls_dict[line_pred[0]], 'True', *output])
-
-        elif((output[1] == 'positive') & (output[2] == True) & (conf_th < output[-1])):
-        # iou 만족, class 만족, conf 미달
-            output_list.append([cls_dict[line_pred[0]], 'conf_lack', *output])
-        
-        elif((output[1] == 'positive') & (output[2] == True) & (conf_th < output[-1])):
-        # iou 미달, class 만족, conf 만족
-            output_list.append([cls_dict[line_pred[0]], 'iou_lack', *output])
-            # _, size = get_IoU(line_true[1:], line_true[1:])
-            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
-
-        elif((output[1] == 'positive') & (output[2] == True) & (conf_th > output[-1])):
-        # iou 미달, class 만족, conf 미달
-            output_list.append([cls_dict[line_pred[0]], 'both_lack', *output])
-            # _, size = get_IoU(line_true[1:], line_true[1:])
-            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
-        
-        else:
-        # d_tf = False -> iou, class 둘 중 하나라도 불만족
-            output_list.append([cls_dict[line_pred[0]], 'False', *output])
-            # _, size = get_IoU(line_true[1:], line_true[1:])
-            # output_list.append([cls_dict[line_true[0]], False, size, *output[1:]])
-
-    return output_list
+    return detect_condition_list
 
 def get_ratio(txt_dir):
     filename_list = os.listdir(txt_dir)
@@ -264,7 +206,7 @@ def get_ratio(txt_dir):
     
     process_count = 0
     for file_name in filename_list:
-        img_path = {img_dir} + '\\' + file_name.replace('.txt', '.jpg')
+        img_path = img_dir + '\\' + file_name.replace('.txt', '.jpg')
 
         img = cv2.imread(img_path, cv2.IMREAD_COLOR)
         img_size = (img.shape[1], img.shape[0])
@@ -294,22 +236,28 @@ def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
     area3 = []
     area4 = []
 
-    true_txt_list = os.listdir(true_label_path)
-    pred_txt_list = os.listdir(pred_label_path)
+    #true_txt_list = os.listdir(true_label_path)
+    #pred_txt_list = os.listdir(pred_label_path)
+    true_txt_list = range(0, 6883, 1)
+    pred_txt_list = [item + 1 for item in true_txt_list]
+
+    true_txt_list = [str(name) + '.txt' for name in true_txt_list]
+    pred_txt_list = [str(name) + '.txt' for name in pred_txt_list]
+
 
     # pred 파일 이름 변환
-    method_graph.rename_files(pred_label_path)
-    pred_txt_list = os.listdir(pred_label_path)
+    #method_graph.rename_files(pred_label_path)
+    #pred_txt_list = os.listdir(pred_label_path)
     
     # check files
     if(len(true_txt_list) == len(pred_txt_list)):
         print('num of files is same')
-        for idx in range(len(true_txt_list)):
-            if(true_txt_list[idx] == pred_txt_list[idx]): # pred파일은 1부터 시작
-                pass
-            else:
-                print(f'{idx+1}th file is different, true is {true_txt_list[idx]}, pred is {pred_txt_list[idx]}')
-                return
+        # for idx in range(len(true_txt_list)):
+            # if(true_txt_list[idx] == pred_txt_list[idx]): # pred파일은 1부터 시작
+                # pass
+            # else:
+                # print(f'{idx+1}th file is different, true is {true_txt_list[idx]}, pred is {pred_txt_list[idx]}')
+                # return
     else:
         print(f'num of files error, true : {len(true_txt_list)}, pred : {len(pred_txt_list)}')
         return
@@ -326,13 +274,15 @@ def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
     process_count = 0
 
     # dir_to_dir
-    for name in true_txt_list:
-        out_list = ftf_by_true(f'{true_label_path}/{name}', f'{pred_label_path}/{name}', iou_th, conf_th)
+    for idx in range(len(true_txt_list)):
+        name_true = true_txt_list[idx]
+        name_pred = pred_txt_list[idx]
+        out_list = ftf_by_true(f'{true_label_path}/{name_true}', f'{pred_label_path}/{name_pred}', iou_th, conf_th)
         #print(f'out_list num of {name} is', len(out_list))
         #print(out_list)
         #return
         for out in out_list:
-            out.insert(0, name)
+            out.insert(0, name_true)
             # print(out)
             result_df.loc[len(result_df)] = out
         
