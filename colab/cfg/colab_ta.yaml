@@ -1,0 +1,23 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+# NCDB dataset by nextchip
+# Documentation: unavailable
+# Example usage: yolo train data=ncdb.yaml
+# parent
+# ├── ultralytics
+# └── datasets
+#     └── ncdb (20.1 GB)
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: /content/Nextchip_dataset # dataset root dir
+train: train_ta.txt # train images (relative to 'path') 12732 images
+val: valid.txt # val images (relative to 'path') 6478 images
+test: test.txt # test images (relative to 'path') 3000 of 6883 images
+
+# Classes
+names:
+  0: per
+  1: car
+  2: bus
+  3: tru
+  4: cyc
+  5: mot
