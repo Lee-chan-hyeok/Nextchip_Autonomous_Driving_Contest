@@ -1,47 +1,41 @@
 import os
 import shutil
+import argparse
 import ultralytics
 from ultralytics import YOLO
 
 # 결과 저장 함수
-
 def result_save_copy(result_dir, name):
     save_path = '/content'  # 압축할 경로
-
-    # 압축 (이때 .zip 확장자가 자동으로 붙으므로 확장자 중복 방지)
     zip_file = f'{save_path}/{name}'  # .zip 확장자는 자동으로 붙을 것임
     shutil.make_archive(zip_file, 'zip', result_dir)
 
     # 내 드라이브에 복사할 경로
     drive_path = f'/content/drive/MyDrive/Nextchip_result/{name.split(".")[0]}.zip'
-
-    # Google Drive로 복사
     shutil.copy(f'{zip_file}.zip', drive_path)
-
     print(f'압축 파일이 Google Drive에 저장되었습니다: {drive_path}')
 
-def train_and_save(name, ep, save_period, batch, result_dir, exist_ok):
-
-    if('.yaml' in name):
-        model = YOLO(f'/content/drive/MyDrive/Nextchip_cfg/{name}')
-    elif('.pt' in name):
-        model = YOLO(f'/content/drive/MyDrive/Nextchip_cfg/{name}')
-    else:
+# 학습 및 저장 함수
+def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
+    model_path = f'/content/drive/MyDrive/Nextchip_cfg/{name}'
+    if not ('.yaml' in name or '.pt' in name):
         print('너 바보, .yaml .pt 둘 다 아님')
+        return
 
-
-    model.train(data='/content/drive/MyDrive/Nextchip_cfg/nextchip_colab_add.yaml', exist_ok= exist_ok, epochs= ep, save_period= save_period, batch= batch, project= result_dir, name= name.split('.')[0])
+    model = YOLO(model_path)
+    model.train(data=data, exist_ok=exist_ok, epochs=ep, save_period=save_period, batch=batch, project=result_dir, name=name.split('.')[0])
 
     # 결과를 압축할 폴더 경로 지정
-    result_folder = f'{result_dir}/{name.split(".")[0]}'  # 훈련된 모델 결과 폴더
-
+    result_folder = f'{result_dir}/{name.split(".")[0]}'
     result_save_copy(result_folder, name)
 
+# 데이터 압축 해제 함수
 def unzip_data(file_name_list, output_dir_list):
-  for dir in output_dir_list:
-    os.makedirs(dir, exist_ok = True)
-  for idx in range(len(file_name_list)):
-    os.system("unzip " + file_name_list[idx] + " -d" + output_dir_list[idx])
+    for dir in output_dir_list:
+        os.makedirs(dir, exist_ok=True)
+    for idx in range(len(file_name_list)):
+        os.system("unzip " + file_name_list[idx] + " -d " + output_dir_list[idx])
+        
 
 file_name_list = [# nextchip dataset
                   # images
@@ -73,4 +67,25 @@ output_dir_list = [# nextchip dataset
 
                    '/content/Nextchip_dataset',]
 
+# Main 함수
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Train YOLO model with specific configurations.")
+    parser.add_argument('--name', type=str, required=True, help='The name of the model file (.yaml or .pt)')
+    parser.add_argument('--ep', type=int, default=10, help='Number of training epochs')
+    parser.add_argument('--save_period', type=int, default=5, help='Interval at which models are saved')
+    parser.add_argument('--batch', type=int, default=16, help='Batch size')
+    parser.add_argument('--result_dir', type=str, default='/content/results', help='Directory to save results')
+    parser.add_argument('--exist_ok', action='store_true', help='Allow existing directories')
+    parser.add_argument('--data', type=str, required=True, help='Path to data.yaml file for training')
+
+    args = parser.parse_args()
+    
+    train_and_save(
+        name=args.name,
+        ep=args.ep,
+        save_period=args.save_period,
+        batch=args.batch,
+        result_dir=args.result_dir,
+        exist_ok=args.exist_ok,
+        data=args.data
+    )
