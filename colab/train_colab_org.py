@@ -29,10 +29,13 @@ def result_save_copy(result_dir, name): # name은 확장자 없는 상태의 이
 
 # 학습 및 저장 함수
 def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
-    model_path = f'/content/Minions/files/yaml_files/{name}'
+    # 형식 검사
     if not ('.yaml' in name or '.pt' in name):
         print('너 바보, .yaml .pt 둘 다 아님')
         return
+    
+    # 모델 선언
+    model_path = f'/content/Minions/files/yaml_files/{name}'    
 
     # git에서 txt들 복사
     shutil.copy(f'Minions/colab/cfg/train_sample.txt', f'/content/Nextchip_dataset/train_sample.txt')
@@ -45,8 +48,14 @@ def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
     model = YOLO(model_path)
     model.train(data=rf'/content/Minions/colab/cfg/colab_{data}.yaml', exist_ok=exist_ok, epochs=ep, save_period=save_period, batch=batch, project=result_dir, name=name.split('.')[0])
 
+    
     # 결과를 압축할 폴더 경로 지정
     result_folder = f'{result_dir}/{name.split(".")[0]}'
+    
+    # 사용한 모델 구조 파일 복사
+    shutil.copy(rf'/content/Minions/files/yaml_files/{name}', f'{result_folder}/{name}')
+    
+    # 압축
     result_save_copy(result_folder, name.split('.')[0])
 
 
