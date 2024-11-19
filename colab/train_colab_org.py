@@ -5,10 +5,8 @@ import ultralytics
 from ultralytics import YOLO
 
 # 결과 저장 함수
-def result_save_copy(result_dir, name):
+def result_save_copy(result_dir, name): # name은 확장자 없는 상태의 이름
     save_path = '/content'  # 압축할 경로
-    zip_file = f'{save_path}/{name}'  # .zip 확장자는 자동으로 붙을 것임
-    shutil.make_archive(zip_file[:-4], 'zip', result_dir)
 
     # best.pt를 name과 일치하게 변경
     src = os.path.join(f'{result_dir}/weights/best.pt')
@@ -17,11 +15,16 @@ def result_save_copy(result_dir, name):
 
     # 변경한 파일을 git레포에 복사
     shutil.copy(f'{result_dir}/weights/{name}.pt', f'Minions/files/weights_files/{name}.pt')
+    
+    # 내 드라이브를 목표로 경로로 압축
+    target_path = f'/content/drive/MyDrive/Nextchip_result/{name}'  # .zip 확장자는 자동으로 붙을 것임
+    source_dir = result_dir
+    shutil.make_archive(target_path, 'zip', source_dir)
+    print(f'압축 파일이 Google Drive에 저장되었습니다: {target_path}')
 
+    # drive_path = f'/content/drive/MyDrive/Nextchip_result/{name.split(".")[0]}.zip'
     # 내 드라이브에 복사할 경로
-    drive_path = f'/content/drive/MyDrive/Nextchip_result/{name.split(".")[0]}.zip'
-    shutil.copy(f'{zip_file}s', drive_path)
-    print(f'압축 파일이 Google Drive에 저장되었습니다: {drive_path}')
+    # shutil.copy(f'{save_path}/', drive_path)
 
 
 # 학습 및 저장 함수
@@ -44,7 +47,7 @@ def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
 
     # 결과를 압축할 폴더 경로 지정
     result_folder = f'{result_dir}/{name.split(".")[0]}'
-    result_save_copy(result_folder, name)
+    result_save_copy(result_folder, name.split('.')[0])
 
 
 

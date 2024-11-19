@@ -8,7 +8,7 @@
 #     └── ncdb (20.1 GB)
 
 # Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
-path: /content/Nextchip_dataset # dataset root dir
+path: C:\Users\ihman\Desktop\NextChip\dataset # dataset root dir
 train: train_sample.txt # train images (relative to 'path') 12732 images
 val: train_sample.txt # val images (relative to 'path') 6478 images
 test: test.txt # test images (relative to 'path') 3000 of 6883 images
