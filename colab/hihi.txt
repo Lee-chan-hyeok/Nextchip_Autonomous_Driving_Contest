@@ -1,1 +1,0 @@
-!git remote set-url origin https://Ino0513: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@github.com/Ino0513/Minions.git
