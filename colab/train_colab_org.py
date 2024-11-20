@@ -28,14 +28,14 @@ def result_save_copy(result_dir, name): # name은 확장자 없는 상태의 이
 
 
 # 학습 및 저장 함수
-def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
+def train_and_save(category, name, ep, save_period, batch, result_dir, exist_ok, data):
     # 형식 검사
     if not ('.yaml' in name or '.pt' in name):
         print('너 바보, .yaml .pt 둘 다 아님')
         return
     
     # 모델 선언
-    model_path = f'/content/Minions/files/yaml_files/{name}'    
+    model_path = f'/content/Minions/files/yaml_files/{category}/{name}'    
 
     # git에서 txt들 복사
     shutil.copy(f'Minions/colab/cfg/train_sample.txt', f'/content/Nextchip_dataset/train_sample.txt')
@@ -53,7 +53,7 @@ def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
     result_folder = f'{result_dir}/{name.split(".")[0]}'
     
     # 사용한 모델 구조 파일 복사
-    shutil.copy(rf'/content/Minions/files/yaml_files/{name}', f'{result_folder}/{name}')
+    shutil.copy(model_path, f'{result_folder}/{name}')
     
     # 압축
     result_save_copy(result_folder, name.split('.')[0])
@@ -63,6 +63,7 @@ def train_and_save(name, ep, save_period, batch, result_dir, exist_ok, data):
 # Main 함수
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train YOLO model with specific configurations.")
+    parser.add_argument('--category', type=str, required=True, help='folder name')
     parser.add_argument('--name', type=str, required=True, help='The name of the model file (.yaml or .pt)')
     parser.add_argument('--ep', type=int, default=10, help='Number of training epochs')
     parser.add_argument('--save_period', type=int, default=5, help='Interval at which models are saved')
@@ -74,6 +75,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     train_and_save(
+        category= args.category,
         name=args.name,
         ep=args.ep,
         save_period=args.save_period,
