@@ -1,0 +1,2 @@
+,Model,params,FPS,GFLOPs,N_mAP / G_mAP (%),N_mAP,G_mAP,per,car,bus,tru,cyc,mot,data_set
+0,v5n_c2f_tv,2.75,0,7.25,0,0,58.51,58.02,88.08,72.57,63.31,17.18,51.9,tv

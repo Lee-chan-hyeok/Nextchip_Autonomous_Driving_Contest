@@ -1,17 +1,17 @@
 import sys
-sys.path.append('C:/Users/ihman/Desktop/NextChip/sechan/JARVIS/ult') # ult 경로 설정
+sys.path.append(r'C:\Users\ihman\Desktop\NextChip\ino\edited_YOLO') # ult 경로 설정
+
 import os
 import logging
 import pandas as pd
 
 from pathlib import Path
-from ult import ultralytics
 from ultralytics import YOLO
 from torchinfo import summary
 
 # PATH
-PROJECT_DIR_PT = r"../../files/weights_files" # pt 경로
-DATA_PATH = r"../../colab/cfg" # nextchip.yaml 경로
+PT_PATH = r"../../files/weights_files" # pt 경로
+CFG_PATH = r"../../colab/cfg" # nextchip.yaml 경로
 # PROJECT_DIR = r"C:\Users\ihman\Desktop\NextChip\sechan\JARVIS\result"  # pt, val, csv 상위 경로
 VAL_PATH = r'../../result/val_result'
 
@@ -29,8 +29,17 @@ def model_summary(model_path):
     return model_summary_info
 
 # pt파일로 validation 자동화
-def val_model(category, model_name, model_path, data_path, csv_path, exist= True, split= 'test', first= False):
-    train_set = model_name[:-4].split('_')[-1]
+def val_model(category, model_name, data_path= CFG_PATH, csv_path= CSV_PATH, exist= True, split= 'test', first= False, model_path= PT_PATH, re_exp= False):
+    if(first == False):
+        # 중복 검사
+        df = pd.read_csv(csv_path, index_col= 0)
+        for idx in range(len(df)):
+            if((model_name == df['Model'][idx]) & (re_exp == False)):
+                print('이미 잇성, 끝나버려')
+                
+                return # 종료해버려
+    
+    train_set = model_name.split('_')[-1]
     
     # try val
     m = YOLO(rf'{model_path}/{category}/{model_name}.pt')
@@ -45,13 +54,35 @@ def val_model(category, model_name, model_path, data_path, csv_path, exist= True
     
     # layers, params, GFLOPs 수집
     layers, params, _, GFLOPs = list(m.info())
+    params = round(params/1000000, 2)
+    GFLOPs = round(GFLOPs, 2)
 
     # mAP50 all과 클래스별로 수집
-    G_map50 = val_result.mean_results()[-2]
+    G_map50 = round(val_result.mean_results()[-2] * 100, 2)
     
     map50_list = []
     for idx in range(6):
-        map50_list.append(val_result.class_result(idx)[-2])
+        map50_list.append(round(val_result.class_result(idx)[-2] * 100, 2))
+
+    row = [model_name,
+           params,
+           0, 
+           GFLOPs, 
+           0, 
+           0, 
+           G_map50, 
+           *map50_list, # per ~ mot
+           train_set,
+           ]
+
+    if re_exp:
+        df = pd.read_csv(csv_path, index_col= 0)
+
+        for idx in range(len(df)):
+            if(model_name == df['Model'][idx]):
+                df.iloc[idx] = row
+            
+            return df
 
     if first:
         # 열 종류
@@ -73,30 +104,28 @@ def val_model(category, model_name, model_path, data_path, csv_path, exist= True
         df = pd.DataFrame(columns= col_name)
 
         # 행행행
-        df.loc[len(df)] = [model_name, 
-                           params, 
-                           GFLOPs, 
-                           0, 
-                           0, 
-                           G_map50, 
-                           *map50_list, # per ~ mot
-                           train_set,
-                           ]
-        df.to_csv(CSV_PATH) # save
+        df.loc[len(df)] = row
+        df.to_csv(csv_path) # save
     else:
-        df = pd.read_csv(CSV_PATH)
+        df = pd.read_csv(csv_path, index_col= 0)
         
         # 행추가
-        df.loc[len(df)] = [model_name, 
-                           params, 
-                           0,
-                           GFLOPs, 
-                           0, 
-                           0, 
-                           G_map50, 
-                           *map50_list, # per ~ mot
-                           train_set,
-                           ]
-        df.to_csv(CSV_PATH) # save
+        df.loc[len(df)] = [len(df), *row]
+        df.to_csv(csv_path) # save
 
     return df
+
+def val_all_by_dir(dir_name):
+    name_list = os.listdir(f'{PT_PATH}/{dir_name}')
+
+    for exp_name in name_list:
+        val_model(dir_name, exp_name)
+
+def val_allll():
+    folder_list = os.listdir(PT_PATH)
+
+    for folder_name in folder_list:
+        if(folder_name == 'undefined'):
+            continue
+        else:
+            val_all_by_dir(folder_name)
