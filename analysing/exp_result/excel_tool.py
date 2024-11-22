@@ -12,13 +12,8 @@ from torchinfo import summary
 # PATH
 PT_PATH = r"../../files/weights_files" # pt 경로
 CFG_PATH = r"../../colab/cfg" # nextchip.yaml 경로
-# PROJECT_DIR = r"C:\Users\ihman\Desktop\NextChip\sechan\JARVIS\result"  # pt, val, csv 상위 경로
 VAL_PATH = r'../../result/val_result'
-
-# LOG_DIR = os.path.join(PROJECT_DIR, "val") # val 경로
-CSV_PATH = '../../documents/exp_list.csv'
-# os.path.join(PROJECT_DIR, "csv_excel_file", "model_summary.csv") # csv 경로
-# EXCEL_PATH = os.path.join(PROJECT_DIR, "csv_excel_file", "model_summary.xlsx") # excel 경로
+CSV_PATH = r'../../documents/exp_list.csv'
 
 def model_summary(model_path):
     # YOLO 모델 초기화
