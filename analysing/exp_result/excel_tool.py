@@ -35,7 +35,7 @@ def val_model(category, model_name, data_path= CFG_PATH, csv_path= CSV_PATH, exi
         df = pd.read_csv(csv_path, index_col= 0)
         for idx in range(len(df)):
             if((model_name == df['Model'][idx]) & (re_exp == False)):
-                print('이미 잇성, 끝나버려')
+                print(f'{model_name}은 이미 잇성, 끝나버려, 히히히')
                 
                 return # 종료해버려
     
@@ -110,7 +110,7 @@ def val_model(category, model_name, data_path= CFG_PATH, csv_path= CSV_PATH, exi
         df = pd.read_csv(csv_path, index_col= 0)
         
         # 행추가
-        df.loc[len(df)] = [len(df), *row]
+        df.loc[len(df)] = row
         df.to_csv(csv_path) # save
 
     return df
@@ -119,7 +119,8 @@ def val_all_by_dir(dir_name):
     name_list = os.listdir(f'{PT_PATH}/{dir_name}')
 
     for exp_name in name_list:
-        val_model(dir_name, exp_name)
+        if(exp_name[-3:] == '.pt'):
+            val_model(dir_name, exp_name[:-3])
 
 def val_allll():
     folder_list = os.listdir(PT_PATH)
