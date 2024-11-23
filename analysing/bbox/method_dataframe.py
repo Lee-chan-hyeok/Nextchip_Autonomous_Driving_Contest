@@ -1,6 +1,8 @@
 import os
 import cv2
 import glob
+import shutil
+import tarfile
 import pandas as pd
 import method_graph
 
@@ -293,3 +295,54 @@ def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
     print(f'progress is {round((process_count / len(true_txt_list) * 100), 2)}%')
 
     return result_df
+
+
+# 인컴 기준
+ground_true_path = rf'C:\Users\ihman\Desktop\NextChip\dataset\labels\test'
+# 깃 기준
+teratum_result_path = r'..\..\result\teratum_result'
+data_result_path = r'..\..\result\data_result'
+
+def make_csv(category, exp_name, re_exp= False):
+    # 저장 목표
+    dst = rf'{data_result_path}\{category}\{exp_name}.csv'
+
+    # 중복 검사
+    if((re_exp == False) & (os.path.exists(dst))):
+        print(f'{dst} is already exist, 스킵!!!')
+        
+        return
+    elif((re_exp == True) & (os.path.exists(dst))):
+        print(f'{dst} is already exist, but 다시!!!')
+
+    # 압축파일의 경로, 압축 해제할 경로
+    tar_file_path = rf'{teratum_result_path}\{category}\{exp_name}.tar'
+    extract_path = rf'{teratum_result_path}\{category}'
+    
+    tar = tarfile.open(tar_file_path)
+    tar.extractall(path= extract_path)
+    tar.close()
+
+    v8s_org_train = get_meta_df(ground_true_path, f'{extract_path}\{exp_name}', 0.5, 0.3)
+    os.makedirs(rf'{data_result_path}\{category}', exist_ok= True)
+    v8s_org_train.to_csv(dst)
+    shutil.rmtree(rf'{extract_path}\{exp_name}')
+
+def make_csv_by_dir(dir_name, re_exp= False):
+    name_list = os.listdir(f'{teratum_result_path}/{dir_name}')
+
+    for exp_name in name_list:
+        if(exp_name[-4:] == '.tar'):
+            print(dir_name, exp_name[:-4])
+            make_csv(dir_name, exp_name[:-4], re_exp= re_exp)
+
+def make_csv_allll(re_exp= False):
+    category_list = os.listdir(teratum_result_path)
+
+    for category in category_list:
+        if(category == 'undefined'):
+            continue
+        elif(category == '.gitkeep'):
+            continue
+        else:
+            make_csv_by_dir(category, re_exp= re_exp)
