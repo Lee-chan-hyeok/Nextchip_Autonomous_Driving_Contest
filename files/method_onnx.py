@@ -25,11 +25,13 @@ def make_onnx(category, model_name, pt_path= PT_PATH, re_exp= False):
     model = YOLO(f'{pt_path}/{category}/{model_name}.pt')
 
     # 익쓰뽀뜨
-    model.export(format= "onnx", 
+    model.export(format= "onnx",
+                 int8= True,
                  nms= True, 
                  opset = 17,
                  data= rf'{CFG_PATH}/nextchip_{train_set}.yaml', 
-                 imgsz= (384, 640)
+                 imgsz= (384, 640),
+                 simplify= False,
                  )
 
     shutil.copy(source, dst)
@@ -38,18 +40,18 @@ def make_onnx(category, model_name, pt_path= PT_PATH, re_exp= False):
 
 
 
-def onnx_all_by_dir(dir_name):
+def onnx_all_by_dir(dir_name, re_exp= False):
     name_list = os.listdir(f'{PT_PATH}/{dir_name}')
 
     for exp_name in name_list:
         if(exp_name[-3:] == '.pt'):
-            make_onnx(dir_name, exp_name[:-3])
+            make_onnx(dir_name, exp_name[:-3], re_exp= re_exp)
 
-def onnx_allll():
+def onnx_allll(re_exp= False):
     folder_list = os.listdir(PT_PATH)
 
     for folder_name in folder_list:
         if(folder_name == 'undefined'):
             continue
         else:
-            onnx_all_by_dir(folder_name)
+            onnx_all_by_dir(folder_name, re_exp= re_exp)
