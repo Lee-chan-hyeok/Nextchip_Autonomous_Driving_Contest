@@ -10,7 +10,8 @@ cls_dict = {0: 'per',
             4: 'cyc',
             5: 'mot'}
 
-def find_class_acc(df, cls_name):
+# 한 df에 대해 정확도, cls 지정 가능
+def find_acc_by_class(df, cls_name):
     if(cls_name == 'all'):
         df_class = df
     else:
@@ -28,8 +29,13 @@ def find_class_acc(df, cls_name):
 
     return [acc1, acc2, acc3]
 
-def find_acc_by_size(df, cls_name, dt_condition, section= [460, 870, 1600, 6300, 921600]):
-    df_class = df[df[f'class'] == cls_name]
+# 한 df에 대해 사이즈별로 정확도, cls 지정 가능
+def find_acc_by_size(df, cls_name, dt_condition= 'Detect', section= [460, 870, 1600, 6300, 921600]):
+    if(cls_name == 'all'):
+        df_class = df
+    else:
+        df_class = df[df['class'] == cls_name]
+    
     num = len(df_class)
     
     # section = [600, 1700, 6500, 921600]
@@ -41,32 +47,38 @@ def find_acc_by_size(df, cls_name, dt_condition, section= [460, 870, 1600, 6300,
     size3 = df_class[(section[2] <= df['size']) & (df['size'] < section[3])]
     size4 = df_class[section[3] <= df['size']]
 
-    size0_acc = find_class_acc(size0, cls_name)[0]
-    size1_acc = find_class_acc(size1, cls_name)[0]
-    size2_acc = find_class_acc(size2, cls_name)[0]
-    size3_acc = find_class_acc(size3, cls_name)[0]
-    size4_acc = find_class_acc(size3, cls_name)[0]
+    size0_acc = find_acc_by_class(size0, cls_name)[0]
+    size1_acc = find_acc_by_class(size1, cls_name)[0]
+    size2_acc = find_acc_by_class(size2, cls_name)[0]
+    size3_acc = find_acc_by_class(size3, cls_name)[0]
+    size4_acc = find_acc_by_class(size4, cls_name)[0]
 
     return [size0_acc, size1_acc, size2_acc, size3_acc, size4_acc]
 
-def find_acc_by_cls_and_size(df, dt_condition, section= [600, 1700, 6500, 921600]):
+def find_acc_by_cls_and_size(df, dt_condition, section= [460, 870, 1600, 6300, 921600]):
     cls_list = list(cls_dict.values())
     class_df_list = []
     size_acc_list = []
 
+    # 전체에 대해 사이즈별 정확도
+    size_acc_list.append(['all', *find_acc_by_size(df, 'all')])
+
+    # 클래스별로 사이즈별 정확도
     for cls in cls_list:
         class_df_list.append(df[df['class'] == cls])
 
     for idx in range(len(class_df_list)):
+        # 클래스에 대해 사이즈별 정확도
         size_acc = find_acc_by_size(class_df_list[idx], cls_list[idx], dt_condition, section)
+        # 클래스명 추가
         size_acc.insert(0, cls_list[idx])
         size_acc_list.append(size_acc)
 
     return size_acc_list
 
-def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'ratio', show= True, section= [460, 870, 1600, 6300]):
+def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
     cls_list = list(cls_dict.values())
-    class_df_list = []
+    class_df_list = [df]
     size_ratio_list = []
 
     for cls in cls_list:
@@ -127,9 +139,9 @@ def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'ratio', show= True, 
 
     return size_ratio_list
 
-def make_Detect_Acc(file_name, graph_name, show= True):
-    csv_path = r'C:\Users\Ino\Desktop\NextChip\Minions_git\result\data_result'
-    result_df = pd.read_csv(rf'{csv_path}\{file_name}.csv', index_col= 0)
+def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= True):
+    csv_path = r'..\..\result\data_result'
+    result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}.csv', index_col= 0)
     # display(result_df)
 
     per_df = result_df[result_df['class'] == 'per']
@@ -139,47 +151,54 @@ def make_Detect_Acc(file_name, graph_name, show= True):
     cyc_df = result_df[result_df['class'] == 'cyc']
     mot_df = result_df[result_df['class'] == 'mot']
 
-    all_acc = find_class_acc(result_df, 'all')[0]
-    per_acc = find_class_acc(result_df, 'per')[0]
-    car_acc = find_class_acc(result_df, 'car')[0]
-    bus_acc = find_class_acc(result_df, 'bus')[0]
-    tru_acc = find_class_acc(result_df, 'tru')[0]
-    cyc_acc = find_class_acc(result_df, 'cyc')[0]
-    mot_acc = find_class_acc(result_df, 'mot')[0]
+    all_acc = find_acc_by_class(result_df, 'all')[0]
+    per_acc = find_acc_by_class(result_df, 'per')[0]
+    car_acc = find_acc_by_class(result_df, 'car')[0]
+    bus_acc = find_acc_by_class(result_df, 'bus')[0]
+    tru_acc = find_acc_by_class(result_df, 'tru')[0]
+    cyc_acc = find_acc_by_class(result_df, 'cyc')[0]
+    mot_acc = find_acc_by_class(result_df, 'mot')[0]
 
     x = ['all', 'per', 'car', 'bus', 'tru', 'cyc', 'mot']
     y = [all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc]
 
     if(show == True):
-        plt.bar(x, y)
+        plt.bar(x, y, color='salmon')
         plt.title(f'Detect_Acc(%) by class [{graph_name}]')
     else:
         pass
     
-    print(y)
+    # print(y)
 
     return x, y
 
-def make_compare_graph(x, y1, y2, x_title, y_title, Title):
-    labels = x
+# 클래스별 정확도, csv path들을 넣어주면 한꺼번에 비교
+def compare_Acc_by_class(csv_path_list, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by class'):
+    y_data = []
+    labels = []
 
-    # 각 막대 위치 조정
-    x = np.arange(len(labels))
-    width = 0.4
+    for csv in csv_path_list:
+        x, y = make_Detect_Acc_by_class(csv.split('\\')[0], csv.split('\\')[1], show= False)
+        y_data.append(y)
+        labels.append(csv.split('\\')[1])
+    
+    n = len(y_data)  # 데이터 세트의 개수
+    num_classes = len(x)  # x축 레이블의 개수
+    x_pos = np.arange(num_classes)  # x축 위치
+    width = 0.8 / n  # 막대 너비 (막대 간 여유 공간 확보)
 
     # 그래프 그리기
-    plt.bar(x - width/2, y1, width, label='v8s_P2G', color='skyblue')
-    plt.bar(x + width/2, y2, width, label='v8s_org', color='salmon')
+    for i, y in enumerate(y_data):
+        plt.bar(x_pos + (i - (n - 1) / 2) * width, y, width, label=labels[i])
 
     # 라벨 및 제목 추가
-    # plt.xlabel('Class')
-    # plt.ylabel('Acc')
-    # plt.title('Detect_Acc(%) by class')
-
     plt.xlabel(x_title)
     plt.ylabel(y_title)
-    plt.title(Title)
-    plt.xticks(x, labels)  # 새로운 x축 레이블 설정
+    plt.title(title)
+    plt.xticks(x_pos, x)  # x축 레이블 설정
     plt.legend()  # 범례 추가
 
     plt.show()
+
+def make_acc_graph_by_csv():
+    pass

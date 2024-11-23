@@ -201,17 +201,17 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
 
 def get_ratio(txt_dir):
     filename_list = os.listdir(txt_dir)
-    img_dir = txt_dir.replace('labels', 'images')
+    # img_dir = txt_dir.replace('labels', 'images')
 
     column_name = ['file_name', 'class', 'size']
     return_df = pd.DataFrame(columns = column_name)
     
     process_count = 0
     for file_name in filename_list:
-        img_path = img_dir + '\\' + file_name.replace('.txt', '.jpg')
+        # img_path = img_dir + '\\' + file_name.replace('.txt', '.jpg')
 
-        img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        img_size = (img.shape[1], img.shape[0])
+        # img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        # img_size = (img.shape[1], img.shape[0])
 
         file_path = os.path.join(txt_dir, file_name)
         line_list = get_info_from_txt(file_path)
@@ -225,7 +225,7 @@ def get_ratio(txt_dir):
 
         # print progress
         process_count = process_count + 1
-        if(process_count % 500 == 0):
+        if(process_count % 2000 == 0):
             print(f'progress is {round((process_count / len(filename_list) * 100), 2)}%')
     
     print(f'progress is {round((process_count / len(filename_list) * 100), 2)}%')
@@ -264,12 +264,6 @@ def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
         print(f'num of files error, true : {len(true_txt_list)}, pred : {len(pred_txt_list)}')
         return
     
-    # box size 구간 구분
-    size_th1 = 1000
-    size_th2 = 10000
-    size_th3 = 50000
-    size_th4 = 100000
-    
     column_name = ['file_name', 'class', 'dt_condition', 'size', 'iou_tf','class_tf', 'pred_cls',  'iou', 'conf']
     result_df = pd.DataFrame(columns= column_name)
 
@@ -289,7 +283,7 @@ def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
             result_df.loc[len(result_df)] = out
         
         process_count = process_count + 1
-        if(process_count % 1000 == 0):
+        if(process_count % 2000 == 0):
             print(f'progress is {round((process_count / len(true_txt_list) * 100), 2)}%')
 
     print(f'progress is {round((process_count / len(true_txt_list) * 100), 2)}%')
