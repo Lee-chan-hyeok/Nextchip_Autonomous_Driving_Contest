@@ -88,5 +88,29 @@ def compare_Acc_by_class(csv_path_list, x_title= 'Class', y_title= 'Acc (%)', ti
 
     plt.show()
 
-def make_acc_graph_by_csv():
-    pass
+def acc_graph_by_csv_list(csv_list):
+    y_list = []
+    name_list = []
+    
+    for csv in csv_list:
+        cat, name = csv.split('/')[-2:]
+        name_list.append(name)
+
+        x, y = method_analysys.make_Detect_Acc_by_class(cat, name)
+        y_list.append(y)
+
+    compare_graph(x, y_list, name_list)
+
+def size_acc_graph_by_csv_list(csv_list):
+    for i in range(7):
+        y_list = []
+        name_list = []
+
+        for csv in csv_list:
+            cat, name = csv.split('/')[-2:]
+            name_list.append(name)
+
+            x, y = method_analysys.make_size_Acc_by_cls(cat, name)
+            y_list.append(y[i][1:])
+
+        compare_graph(x, y_list, name_list)
