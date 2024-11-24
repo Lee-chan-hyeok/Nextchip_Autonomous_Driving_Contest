@@ -1,9 +1,13 @@
 import sys
-sys.path.append(r'C:\Users\ihman\Desktop\NextChip\ino\edited_YOLO') # ult 경로 설정
+sys.path.append(r'C:\Users\ihman\Desktop\NextChip\ino\edited_YOLO')
+sys.path.append('../bbox')
 
 import os
 import logging
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import method_graph
 
 from pathlib import Path
 from ultralytics import YOLO
@@ -126,7 +130,7 @@ def val_allll():
         else:
             val_all_by_dir(folder_name)
 
-def extract_map50(file_path):
+def extract_NmAP50(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
@@ -134,10 +138,44 @@ def extract_map50(file_path):
 
     if len(lines) >= 3:  # 줄 수 확인
         # line3의 세 번째 값
-        return float(lines[2].split('|')[2])  # 0-based index로 세 번째 값 선택
+        NmAP50 = float(lines[2].split('|')[2])
+        return round(NmAP50 * 100, 2)  # 0-based index로 세 번째 값 선택
     return None  # 줄이 부족하면 None 반환
 
 def edit_NmAP():
     df = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
-
     
+    NmAP_path = '../../result/NmAP50_result'
+    txt_list = []
+
+    cat_list = os.listdir(NmAP_path)
+    for cat in cat_list:
+        name_list = os.listdir(f'{NmAP_path}/{cat}')
+        
+        for name in name_list:
+            txt_list.append(f'{cat}/{name}')
+
+    for txt in txt_list:
+        cat, name = txt.split('/')
+        df.loc[df['Model'] == name[:-4], 'N_mAP'] = extract_NmAP50(f'{NmAP_path}/{txt}')
+
+    df['N_mAP / G_mAP (%)'] = round(df['N_mAP']/df['G_mAP'] * 100, 2)
+    df.to_csv('../../documents/exp_list.csv')
+
+def exp_graph(name_list, y_lim = False):
+    exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
+
+    select_df = exp_list[exp_list['Model'].isin(name_list)].reset_index(drop= True)
+    labels = ['N_mAP / G_mAP (%)', 'N_mAP', 'G_mAP', 'params']
+    x_ticks = select_df['Model']
+    bo = select_df['N_mAP / G_mAP (%)']
+    N_mAP = select_df['N_mAP']
+    G_mAP = select_df['G_mAP']
+    params = select_df['params']
+
+    y_data = [bo, N_mAP, G_mAP]
+
+    if(y_lim):
+        plt.ylim(y_lim)
+
+    method_graph.compare_graph(x_ticks, y_data, labels)
