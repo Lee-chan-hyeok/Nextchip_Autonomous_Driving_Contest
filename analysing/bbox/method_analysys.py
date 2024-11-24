@@ -76,7 +76,7 @@ def find_acc_by_cls_and_size(df, dt_condition, section= [460, 870, 1600, 6300, 9
 
     return size_acc_list
 
-def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
+def find_size_ratio_by_cls(df, set_name, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
     cls_list = list(cls_dict.values())
     class_df_list = [df]
     size_ratio_list = []
@@ -89,7 +89,7 @@ def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'Ratio', show= True, 
         class_df = class_df_list[idx]
         total = len(class_df)
 
-        bar1 = len(class_df[df['size'] < section[0]])
+        bar1 = len(class_df[class_df['size'] < section[0]])
         bar2 = len(class_df[(section[0] <= class_df['size']) & (class_df['size'] < section[1])])
         bar3 = len(class_df[(section[1] <= class_df['size']) & (class_df['size'] < section[2])])
         bar4 = len(class_df[(section[2] <= class_df['size']) & (class_df['size'] < section[3])])
@@ -102,7 +102,10 @@ def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'Ratio', show= True, 
         size_ratio = [bar1/total, bar2/total, bar3/total, bar4/total, bar5/total]
         size_ratio = [round(item*100, 4) for item in size_ratio]
 
-        size_ratio.insert(0, cls_list[idx])
+        if(idx == 0):
+            size_ratio.insert(0, 'all')
+        else:
+            size_ratio.insert(0, cls_list[idx - 1])
         size_ratio_list.append(size_ratio)
 
         if(show):
@@ -115,11 +118,11 @@ def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'Ratio', show= True, 
             
 
             if(num_or_ratio == 'Num'):
-                plt.bar(x, y, color='skyblue')
+                plt.bar(x, y, color='royalblue')
                 plt.ylabel('Num')
 
             elif(num_or_ratio == 'Ratio'):
-                plt.bar(x, y_ratio, color='skyblue')
+                plt.bar(x, y_ratio, color='royalblue')
                 plt.ylabel('Ratio (%)')
 
             else:
@@ -129,9 +132,9 @@ def find_ratio_by_cls_and_size(df, set_name, num_or_ratio= 'Ratio', show= True, 
             plt.xlabel('Box_size (pixel)')
             
             if(('Train' in set_name) | ('Test' in set_name)):
-                plt.title(f'{set_name}_{cls_list[idx]}_BBox size_Histogram')
+                plt.title(f'{set_name}_{size_ratio[0]}_BBox size_Histogram')
             else:
-                plt.title(f'{cls_list[idx]}_BBox size_Histogram')
+                plt.title(f'{size_ratio[0]}_BBox size_Histogram')
             
             # print(y)
             # print(y_ratio)
@@ -172,33 +175,3 @@ def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= True):
 
     return x, y
 
-# 클래스별 정확도, csv path들을 넣어주면 한꺼번에 비교
-def compare_Acc_by_class(csv_path_list, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by class'):
-    y_data = []
-    labels = []
-
-    for csv in csv_path_list:
-        x, y = make_Detect_Acc_by_class(csv.split('\\')[0], csv.split('\\')[1], show= False)
-        y_data.append(y)
-        labels.append(csv.split('\\')[1])
-    
-    n = len(y_data)  # 데이터 세트의 개수
-    num_classes = len(x)  # x축 레이블의 개수
-    x_pos = np.arange(num_classes)  # x축 위치
-    width = 0.8 / n  # 막대 너비 (막대 간 여유 공간 확보)
-
-    # 그래프 그리기
-    for i, y in enumerate(y_data):
-        plt.bar(x_pos + (i - (n - 1) / 2) * width, y, width, label=labels[i])
-
-    # 라벨 및 제목 추가
-    plt.xlabel(x_title)
-    plt.ylabel(y_title)
-    plt.title(title)
-    plt.xticks(x_pos, x)  # x축 레이블 설정
-    plt.legend()  # 범례 추가
-
-    plt.show()
-
-def make_acc_graph_by_csv():
-    pass

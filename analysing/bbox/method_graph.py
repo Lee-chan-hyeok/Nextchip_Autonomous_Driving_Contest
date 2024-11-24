@@ -1,7 +1,10 @@
 import os
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 import method_dataframe
+import method_analysys
 
 def make_histo_list(gt_label_path):
     file_list = os.listdir(gt_label_path)
@@ -37,3 +40,53 @@ def rename_files(folder_path):
             os.rename(src, dst)
     else:
         print(f'{check_name} is in the folder, do not excute renaming')
+
+# 클래스별 정확도, csv path들을 넣어주면 한꺼번에 비교
+def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by class'):    
+    n = len(y_data)  # 데이터 세트의 개수
+    num_classes = len(x_ticks)  # x축 레이블의 개수
+    x_pos = np.arange(num_classes)  # x축 위치
+    width = 0.8 / n  # 막대 너비 (막대 간 여유 공간 확보)
+
+    # 그래프 그리기
+    for i, y in enumerate(y_data):
+        plt.bar(x_pos + (i - (n - 1) / 2) * width, y, width, label=labels[i])
+
+    # 라벨 및 제목 추가
+    plt.xlabel(x_title)
+    plt.ylabel(y_title)
+    plt.title(title)
+    plt.xticks(x_pos, x_ticks)  # x축 레이블 설정
+    plt.legend()  # 범례 추가
+
+    plt.show()
+
+def compare_Acc_by_class(csv_path_list, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by class'):
+    y_data = []
+    labels = []
+
+    for csv in csv_path_list:
+        x, y = method_analysys.make_Detect_Acc_by_class(csv.split('\\')[0], csv.split('\\')[1], show= False)
+        y_data.append(y)
+        labels.append(csv.split('\\')[1])
+    
+    n = len(y_data)  # 데이터 세트의 개수
+    num_classes = len(x)  # x축 레이블의 개수
+    x_pos = np.arange(num_classes)  # x축 위치
+    width = 0.8 / n  # 막대 너비 (막대 간 여유 공간 확보)
+
+    # 그래프 그리기
+    for i, y in enumerate(y_data):
+        plt.bar(x_pos + (i - (n - 1) / 2) * width, y, width, label=labels[i])
+
+    # 라벨 및 제목 추가
+    plt.xlabel(x_title)
+    plt.ylabel(y_title)
+    plt.title(title)
+    plt.xticks(x_pos, x)  # x축 레이블 설정
+    plt.legend()  # 범례 추가
+
+    plt.show()
+
+def make_acc_graph_by_csv():
+    pass
