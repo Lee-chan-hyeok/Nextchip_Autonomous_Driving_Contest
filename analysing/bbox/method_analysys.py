@@ -188,13 +188,7 @@ def make_size_Acc_by_cls(category, exp_name, graph_name= '_', show= False):
     # cyc_df = result_df[result_df['class'] == 'cyc']
     # mot_df = result_df[result_df['class'] == 'mot']
 
-    all_acc = find_acc_by_cls_and_size(result_df)
-    per_acc = find_acc_by_cls_and_size(result_df)
-    car_acc = find_acc_by_cls_and_size(result_df)
-    bus_acc = find_acc_by_cls_and_size(result_df)
-    tru_acc = find_acc_by_cls_and_size(result_df)
-    cyc_acc = find_acc_by_cls_and_size(result_df)
-    mot_acc = find_acc_by_cls_and_size(result_df)
+    all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc = find_acc_by_cls_and_size(result_df)
 
     x = ['all', 'per', 'car', 'bus', 'tru', 'cyc', 'mot']
     y = [all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc]
