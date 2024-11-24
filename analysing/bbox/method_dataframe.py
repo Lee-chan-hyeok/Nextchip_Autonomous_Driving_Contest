@@ -292,7 +292,7 @@ data_result_path = r'..\..\result\data_result'
 
 def make_csv(category, exp_name, conf= 0.25, re_exp= False):
     # 저장 목표
-    dst = rf'{data_result_path}\{category}\{exp_name}.csv'
+    dst = rf'{data_result_path}\{category}\{exp_name}_{conf}.csv'
 
     # 중복 검사
     if((re_exp == False) & (os.path.exists(dst))):
@@ -312,7 +312,7 @@ def make_csv(category, exp_name, conf= 0.25, re_exp= False):
 
     v8s_org_train = get_meta_df(ground_true_path, f'{extract_path}\{exp_name}', 0.5, conf)
     os.makedirs(rf'{data_result_path}\{category}', exist_ok= True)
-    v8s_org_train.to_csv(f'{dst}_{conf}')
+    v8s_org_train.to_csv(rf'{data_result_path}\{category}\{exp_name}_{conf}.csv')
     shutil.rmtree(rf'{extract_path}\{exp_name}')
 
 def make_csv_by_dir(dir_name, conf= 0.25, re_exp= False):
