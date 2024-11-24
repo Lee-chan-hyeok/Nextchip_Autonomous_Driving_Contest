@@ -55,7 +55,7 @@ def find_acc_by_size(df, cls_name, dt_condition= 'Detect', section= [460, 870, 1
 
     return [size0_acc, size1_acc, size2_acc, size3_acc, size4_acc]
 
-def find_acc_by_cls_and_size(df, dt_condition, section= [460, 870, 1600, 6300, 921600]):
+def find_acc_by_cls_and_size(df, dt_condition= '_', section= [460, 870, 1600, 6300, 921600]):
     cls_list = list(cls_dict.values())
     class_df_list = []
     size_acc_list = []
@@ -76,6 +76,7 @@ def find_acc_by_cls_and_size(df, dt_condition, section= [460, 870, 1600, 6300, 9
 
     return size_acc_list
 
+# df에 대해 클래스 별로 사이즈별 히스토그램 출력
 def find_size_ratio_by_cls(df, set_name, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
     cls_list = list(cls_dict.values())
     class_df_list = [df]
@@ -142,7 +143,7 @@ def find_size_ratio_by_cls(df, set_name, num_or_ratio= 'Ratio', show= True, sect
 
     return size_ratio_list
 
-def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= True):
+def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'
     result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}.csv', index_col= 0)
     # display(result_df)
@@ -175,3 +176,29 @@ def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= True):
 
     return x, y
 
+def make_size_Acc_by_cls(category, exp_name, graph_name= '_', show= False):
+    csv_path = r'..\..\result\data_result'
+    result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}.csv', index_col= 0)
+    # display(result_df)
+
+    # per_df = result_df[result_df['class'] == 'per']
+    # car_df = result_df[result_df['class'] == 'car']
+    # bus_df = result_df[result_df['class'] == 'bus']
+    # tru_df = result_df[result_df['class'] == 'tru']
+    # cyc_df = result_df[result_df['class'] == 'cyc']
+    # mot_df = result_df[result_df['class'] == 'mot']
+
+    all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc = find_acc_by_cls_and_size(result_df)
+
+    x = ['all', 'per', 'car', 'bus', 'tru', 'cyc', 'mot']
+    y = [all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc]
+
+    if(show == True):
+        plt.bar(x, y, color='salmon')
+        plt.title(f'Detect_Acc(%) by class [{graph_name}]')
+    else:
+        pass
+    
+    # print(y)
+
+    return x, y
