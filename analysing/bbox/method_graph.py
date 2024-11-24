@@ -101,7 +101,7 @@ def acc_graph_by_csv_list(csv_list):
 
     compare_graph(x, y_list, name_list)
 
-def size_acc_graph_by_csv_list(csv_list):
+def size_acc_graph_by_csv_list(csv_list, conf= 0.3):
     for i in range(7):
         y_list = []
         name_list = []
@@ -110,7 +110,7 @@ def size_acc_graph_by_csv_list(csv_list):
             cat, name = csv.split('/')[-2:]
             name_list.append(name)
 
-            x, y = method_analysys.make_size_Acc_by_cls(cat, name)
+            x, y = method_analysys.make_size_Acc_by_cls(cat, name, conf)
             y_list.append(y[i][1:])
 
         compare_graph(x, y_list, name_list, x_title= 'Box_size', title= f'{y[i][0]}')

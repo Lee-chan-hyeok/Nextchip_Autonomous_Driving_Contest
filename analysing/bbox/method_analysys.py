@@ -176,9 +176,9 @@ def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= False):
 
     return x, y
 
-def make_size_Acc_by_cls(category, exp_name, graph_name= '_', show= False):
+def make_size_Acc_by_cls(category, exp_name, conf= 0.3, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'
-    result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}.csv', index_col= 0)
+    result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}_{conf}.csv', index_col= 0)
     
     x = ['small_s', 'small_m', 'small_l', 'medium', 'large']
     y_list = find_acc_by_cls_and_size(result_df)
