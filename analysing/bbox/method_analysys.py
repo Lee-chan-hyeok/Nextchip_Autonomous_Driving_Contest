@@ -143,9 +143,9 @@ def find_size_ratio_by_cls(df, set_name, num_or_ratio= 'Ratio', show= True, sect
 
     return size_ratio_list
 
-def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= False):
+def make_Detect_Acc_by_class(category, exp_name, conf= 0.3, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'
-    result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}.csv', index_col= 0)
+    result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}_{conf}.csv', index_col= 0)
     # display(result_df)
 
     per_df = result_df[result_df['class'] == 'per']

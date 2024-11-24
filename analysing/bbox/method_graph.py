@@ -88,7 +88,7 @@ def compare_Acc_by_class(csv_path_list, x_title= 'Class', y_title= 'Acc (%)', ti
 
     plt.show()
 
-def acc_graph_by_csv_list(csv_list):
+def acc_graph_by_csv_list(csv_list, conf= 0.3):
     y_list = []
     name_list = []
     
@@ -96,7 +96,7 @@ def acc_graph_by_csv_list(csv_list):
         cat, name = csv.split('/')[-2:]
         name_list.append(name)
 
-        x, y = method_analysys.make_Detect_Acc_by_class(cat, name)
+        x, y = method_analysys.make_Detect_Acc_by_class(cat, name, conf)
         y_list.append(y)
 
     compare_graph(x, y_list, name_list)
