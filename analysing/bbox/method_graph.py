@@ -113,4 +113,4 @@ def size_acc_graph_by_csv_list(csv_list):
             x, y = method_analysys.make_size_Acc_by_cls(cat, name)
             y_list.append(y[i][1:])
 
-        compare_graph(x, y_list, name_list)
+        compare_graph(x, y_list, name_list, x_title= 'Box_size', title= f'{y[i][0]}')
