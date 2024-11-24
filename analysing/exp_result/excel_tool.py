@@ -173,7 +173,7 @@ def exp_graph(name_list, y_lim = False):
     G_mAP = select_df['G_mAP']
     params = select_df['params']
 
-    y_data = [bo, N_mAP, G_mAP, params]
+    y_data = [bo, N_mAP, G_mAP]
 
     if(y_lim):
         plt.ylim(y_lim)
