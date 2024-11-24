@@ -232,24 +232,17 @@ def get_ratio(txt_dir):
     
     return return_df
 
-def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.1):
+def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.25):
     area1 = []
     area2 = []
     area3 = []
     area4 = []
 
-    #true_txt_list = os.listdir(true_label_path)
-    #pred_txt_list = os.listdir(pred_label_path)
     true_txt_list = range(0, 6883, 1)
     pred_txt_list = [item + 1 for item in true_txt_list]
 
     true_txt_list = [str(name) + '.txt' for name in true_txt_list]
     pred_txt_list = [str(name) + '.txt' for name in pred_txt_list]
-
-
-    # pred 파일 이름 변환
-    #method_graph.rename_files(pred_label_path)
-    #pred_txt_list = os.listdir(pred_label_path)
     
     # check files
     if(len(true_txt_list) == len(pred_txt_list)):
@@ -297,7 +290,7 @@ ground_true_path = rf'C:\Users\ihman\Desktop\NextChip\dataset\labels\test'
 teratum_result_path = r'..\..\result\teratum_result'
 data_result_path = r'..\..\result\data_result'
 
-def make_csv(category, exp_name, re_exp= False):
+def make_csv(category, exp_name, conf= 0.25, re_exp= False):
     # 저장 목표
     dst = rf'{data_result_path}\{category}\{exp_name}.csv'
 
@@ -317,20 +310,20 @@ def make_csv(category, exp_name, re_exp= False):
     tar.extractall(path= extract_path)
     tar.close()
 
-    v8s_org_train = get_meta_df(ground_true_path, f'{extract_path}\{exp_name}', 0.5, 0.3)
+    v8s_org_train = get_meta_df(ground_true_path, f'{extract_path}\{exp_name}', 0.5, conf)
     os.makedirs(rf'{data_result_path}\{category}', exist_ok= True)
-    v8s_org_train.to_csv(dst)
+    v8s_org_train.to_csv(f'{dst}_{conf}')
     shutil.rmtree(rf'{extract_path}\{exp_name}')
 
-def make_csv_by_dir(dir_name, re_exp= False):
+def make_csv_by_dir(dir_name, conf= 0.25, re_exp= False):
     name_list = os.listdir(f'{teratum_result_path}/{dir_name}')
 
     for exp_name in name_list:
         if(exp_name[-4:] == '.tar'):
             print(dir_name, exp_name[:-4])
-            make_csv(dir_name, exp_name[:-4], re_exp= re_exp)
+            make_csv(dir_name, exp_name[:-4], conf, re_exp= re_exp)
 
-def make_csv_allll(re_exp= False):
+def make_csv_allll(conf= 0.25, re_exp= False):
     category_list = os.listdir(teratum_result_path)
 
     for category in category_list:
@@ -339,4 +332,4 @@ def make_csv_allll(re_exp= False):
         elif(category == '.gitkeep'):
             continue
         else:
-            make_csv_by_dir(category, re_exp= re_exp)
+            make_csv_by_dir(category, conf, re_exp= re_exp)

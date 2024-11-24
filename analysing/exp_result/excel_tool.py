@@ -125,3 +125,17 @@ def val_allll():
             continue
         else:
             val_all_by_dir(folder_name)
+
+def extract_map50(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    
+    lines = content.strip().split('\n')
+
+    if len(lines) >= 3:  # 줄 수 확인
+        # line3의 세 번째 값
+        return float(lines[2].split('|')[2])  # 0-based index로 세 번째 값 선택
+    return None  # 줄이 부족하면 None 반환
+
+def edit_NmAP():
+    df = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
