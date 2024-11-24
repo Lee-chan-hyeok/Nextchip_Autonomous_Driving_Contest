@@ -2,6 +2,8 @@ import os
 import torch
 import numpy as np
 import argparse
+import tarfile
+import shutil
 
 from torchvision import ops
 from ultralytics.utils.ops import xywh2xyxy
@@ -13,13 +15,15 @@ parser = argparse.ArgumentParser(description="Nextchip Challenge Evaluator")
 
 parser.add_argument('--w', default=640, type=int, metavar='WIDTH', help='width')
 parser.add_argument('--h', default=384, type=int, metavar='HEIGHT', help='height')
-parser.add_argument('--pred', default='', type=str, metavar='PRED_PATH',
+parser.add_argument('--category', default='', type=str, metavar='CATEGORY',
+                    help='path to predictions')
+parser.add_argument('--name', default='', type=str, metavar='EXP_NAME',
                     help='path to predictions')
 parser.add_argument('--target', default='ground_truth', type=str, metavar='TARGET_PATH',
                     help='path to ground truth')
 
 
-def print_table(myDict, model_name, colList=None):
+def print_table(myDict, category, model_name, colList=None):
    """ Pretty print a list of dictionaries (myDict) as a dynamically sized table.
    If column names (colList) aren't specified, they will show in random order.
    Author: Thierry Husson - Use it as you want but don't blame me.
@@ -32,8 +36,10 @@ def print_table(myDict, model_name, colList=None):
    formatStr = ' | '.join(["{{:<{}}}".format(i) for i in colSize])
    myList.insert(1, ['-' * i for i in colSize]) # Seperating line
    
-   txt_path = 'C:/Users/Ino/Desktop/NextChip/Minions_git/result/eval_result' + model_name + '.txt'
-   with open (txt_path, 'w') as f:
+   os.makedirs(f'../result/NmAP50_result/{category}', exist_ok= True)
+   save_path = f'../result/NmAP50_result/{category}/{model_name}.txt'
+
+   with open (save_path, 'w') as f:
     for item in myList:
        print(formatStr.format(*item))
        f.write(formatStr.format(*item) + '\n')
@@ -156,16 +162,26 @@ if __name__ == "__main__":
 
     w = args.w
     h = args.h
-    model_name = args.pred
+    cat = args.category
+    model_name = args.name
     target_path = args.target
 
     teratum_result = '../result/teratum_result'
 
+    # 압축파일의 경로, 압축 해제할 경로
+    tar_file_path = rf'{teratum_result}/{cat}/{model_name}.tar'
+    extract_path = rf'{teratum_result}/{cat}'
     
+    tar = tarfile.open(tar_file_path)
+    tar.extractall(path= extract_path)
+    tar.close()
 
+    # evaluate
     solver = Evaluator(w, h)
-    preds, targets = solver.register(pred_path='C:/Users/Ino/Desktop/NextChip/eval_result/' + model_name, target_path=target_path)
+    preds, targets = solver.register(pred_path= f'{teratum_result}/{cat}/{model_name}', target_path=target_path)
     solver.update_metrics(preds, targets)
     result_dict = solver.get_stats()
     print(result_dict)
-    print_table(result_dict, model_name)
+    print_table(result_dict, cat, model_name)
+
+    shutil.rmtree(rf'{extract_path}/{model_name}')
