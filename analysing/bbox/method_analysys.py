@@ -179,26 +179,16 @@ def make_Detect_Acc_by_class(category, exp_name, graph_name= '_', show= False):
 def make_size_Acc_by_cls(category, exp_name, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'
     result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}.csv', index_col= 0)
-    # display(result_df)
-
-    # per_df = result_df[result_df['class'] == 'per']
-    # car_df = result_df[result_df['class'] == 'car']
-    # bus_df = result_df[result_df['class'] == 'bus']
-    # tru_df = result_df[result_df['class'] == 'tru']
-    # cyc_df = result_df[result_df['class'] == 'cyc']
-    # mot_df = result_df[result_df['class'] == 'mot']
-
-    all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc = find_acc_by_cls_and_size(result_df)
-
-    x = ['all', 'per', 'car', 'bus', 'tru', 'cyc', 'mot']
-    y = [all_acc, per_acc, car_acc, bus_acc, tru_acc, cyc_acc, mot_acc]
-
-    if(show == True):
-        plt.bar(x, y, color='salmon')
-        plt.title(f'Detect_Acc(%) by class [{graph_name}]')
-    else:
-        pass
     
-    # print(y)
+    x = ['small_s', 'small_m', 'small_l', 'medium', 'large']
+    y_list = find_acc_by_cls_and_size(result_df)
+    
+    for y in y_list:
+        if(show == True):
+            plt.bar(x, y[1:], color='salmon')
+            plt.title(f'Detect_Acc(%) by class [{y[0]}]')
+            plt.show()
+        else:
+            pass
 
-    return x, y
+    return x, y_list
