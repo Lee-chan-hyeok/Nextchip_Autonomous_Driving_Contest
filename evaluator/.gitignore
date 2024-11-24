@@ -168,4 +168,4 @@ pnnx*
 # calibration image
 calibration_*.npy
 
-*.txt
+# *.txt
