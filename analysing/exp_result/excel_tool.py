@@ -162,20 +162,35 @@ def edit_NmAP():
     df['N_mAP / G_mAP (%)'] = round(df['N_mAP']/df['G_mAP'] * 100, 2)
     df.to_csv('../../documents/exp_list.csv')
 
-def exp_graph(name_list, y_lim = False):
+def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
 
     select_df = exp_list[exp_list['Model'].isin(name_list)].reset_index(drop= True)
-    labels = ['N_mAP / G_mAP (%)', 'N_mAP', 'G_mAP', 'params']
+    labels = [
+        'N_mAP / G_mAP (%)',
+        'N_mAP', 
+        # 'G_mAP',
+        # 'params',
+        # 'FPS',
+        ]
     x_ticks = select_df['Model']
+    x_ticks = [item[19:-2] for item in x_ticks]
     bo = select_df['N_mAP / G_mAP (%)']
     N_mAP = select_df['N_mAP']
     G_mAP = select_df['G_mAP']
     params = select_df['params']
+    FPS = select_df['FPS']
 
-    y_data = [bo, N_mAP, G_mAP]
+    y_data = [
+        bo,
+        N_mAP,
+        # G_mAP,
+        # params,
+        # FPS,
+        ]
+    # y_data = [bo]
 
     if(y_lim):
         plt.ylim(y_lim)
 
-    method_graph.compare_graph(x_ticks, y_data, labels)
+    method_graph.compare_graph(x_ticks, y_data, labels, x_title= x_title, y_title= y_title, title= title)

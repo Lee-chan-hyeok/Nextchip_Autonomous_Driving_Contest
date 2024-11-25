@@ -57,7 +57,7 @@ def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)',
     plt.ylabel(y_title)
     plt.title(title)
     plt.xticks(x_pos, x_ticks)  # x축 레이블 설정
-    plt.legend()  # 범례 추가
+    plt.legend(framealpha=0)  # 범례 추가
 
     plt.show()
 
