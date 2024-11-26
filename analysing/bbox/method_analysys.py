@@ -10,6 +10,40 @@ cls_dict = {0: 'per',
             4: 'cyc',
             5: 'mot'}
 
+# 데이터셋의 클래스별 비율
+def ratio_by_cls(df, data_set, num_or_ratio = 'Ratio', show= False):
+    total_num = len(df)
+
+    num_list = []
+    for cls in cls_dict.values():
+        temp = df[df['class'] == cls]
+        num_list.append(len(temp))
+
+    if(num_or_ratio == 'Ratio'):
+        num_list = [round((item/total_num)*100, 2) for item in num_list]
+
+    if(show):
+        x_labels = cls_dict.values()  # x축 레이블
+        # plt.figure(figsize=(10, 6))
+        plt.bar(x_labels, num_list, color='royalblue', edgecolor='royalblue')
+
+        plt.xlabel('Class')
+        plt.ylabel('Number' if num_or_ratio != 'Ratio' else 'Ratio (%)')
+        if(num_or_ratio == 'Ratio'):
+            title = f'{data_set} Ratio by Class'
+        elif(num_or_ratio == 'Num'):
+            title = f'{data_set} Num by Class'
+        plt.title(title)
+        # plt.xticks(fontsize=12)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.show()
+    else:
+        return num_list
+
+    
+
+
 # 한 df에 대해 정확도, cls 지정 가능
 def find_acc_by_class(df, cls_name):
     if(cls_name == 'all'):
@@ -77,7 +111,7 @@ def find_acc_by_cls_and_size(df, dt_condition= '_', section= [460, 870, 1600, 63
     return size_acc_list
 
 # df에 대해 클래스 별로 사이즈별 히스토그램 출력
-def find_size_ratio_by_cls(df, set_name, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
+def find_size_ratio_by_cls(df, data_set, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
     cls_list = list(cls_dict.values())
     class_df_list = [df]
     size_ratio_list = []
@@ -113,32 +147,22 @@ def find_size_ratio_by_cls(df, set_name, num_or_ratio= 'Ratio', show= True, sect
             x = ['small_s', 'small_m', 'small_l', 'medium', 'large']
             
             y = [bar1, bar2, bar3, bar4, bar5]
-            y_ratio = [bar1/total, bar2/total, bar3/total, bar4/total, bar5/total]
-            y_ratio = [round(item*100, 4) for item in y_ratio]
-
+            if(num_or_ratio == 'Ratio'):
+                y = [bar1/total, bar2/total, bar3/total, bar4/total, bar5/total]
+                y = [round(item*100, 4) for item in y]
             
-
-            if(num_or_ratio == 'Num'):
-                plt.bar(x, y, color='royalblue')
-                plt.ylabel('Num')
-
-            elif(num_or_ratio == 'Ratio'):
-                plt.bar(x, y_ratio, color='royalblue')
-                plt.ylabel('Ratio (%)')
-
+            plt.bar(x, y, color='royalblue')
+            
+            plt.xlabel('Object size (pixel)')
+            plt.ylabel('Num' if num_or_ratio == 'Num' else 'Ratio (%)')
+            
+            if(('Train' in data_set) | ('Valid' in data_set) | ('Test' in data_set)):
+                plt.title(f'{data_set} : {size_ratio[0]} Histogram by size')
             else:
-                print('num_or_ratio error!!')
-                return
+                plt.title(f'{size_ratio[0]} Histogram by size')
+
+            plt.grid(axis='y', linestyle='--', alpha=0.7)
             
-            plt.xlabel('Box_size (pixel)')
-            
-            if(('Train' in set_name) | ('Test' in set_name)):
-                plt.title(f'{set_name}_{size_ratio[0]}_BBox size_Histogram')
-            else:
-                plt.title(f'{size_ratio[0]}_BBox size_Histogram')
-            
-            # print(y)
-            # print(y_ratio)
             plt.show()
 
     return size_ratio_list
