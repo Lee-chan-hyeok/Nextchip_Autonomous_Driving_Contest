@@ -14,6 +14,41 @@ cls_dict = {0: 'per',
             4: 'cyc',
             5: 'mot'}
 
+def make_ncs_df(txt_dir):
+    filename_list = os.listdir(txt_dir)
+    # img_dir = txt_dir.replace('labels', 'images')
+
+    column_name = ['file_name', 'class', 'size']
+    return_df = pd.DataFrame(columns = column_name)
+    
+    process_count = 0
+    for file_name in filename_list:
+        # img_path = img_dir + '\\' + file_name.replace('.txt', '.jpg')
+
+        # img = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        # img_size = (img.shape[1], img.shape[0])
+
+        file_path = os.path.join(txt_dir, file_name)
+        line_list = get_info_from_txt(file_path)
+
+        for line in line_list:
+            if(len(line) != 5):
+                print('err ->', file_name)
+                continue
+
+            else:
+                size = int(get_size(*line[1:], (1280, 720)))
+                return_df.loc[len(return_df)] = [file_name, cls_dict[line[0]], size]
+
+        # print progress
+        process_count = process_count + 1
+        if(process_count % 2000 == 0):
+            print(f'progress is {round((process_count / len(filename_list) * 100), 2)}%')
+    
+    print(f'progress is {round((process_count / len(filename_list) * 100), 2)}%')
+    
+    return return_df
+
 # txt파일 경로를 받아 정보 받아오기
 def get_info_from_txt(file_path):
     with open(file_path, 'r') as f:
@@ -199,39 +234,6 @@ def ftf_by_true(true_file_path, pred_file_path, iou_th= 0.5, conf_th= 0.3):
 
     return detect_condition_list
 
-def get_ratio(txt_dir):
-    filename_list = os.listdir(txt_dir)
-    # img_dir = txt_dir.replace('labels', 'images')
-
-    column_name = ['file_name', 'class', 'size']
-    return_df = pd.DataFrame(columns = column_name)
-    
-    process_count = 0
-    for file_name in filename_list:
-        # img_path = img_dir + '\\' + file_name.replace('.txt', '.jpg')
-
-        # img = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        # img_size = (img.shape[1], img.shape[0])
-
-        file_path = os.path.join(txt_dir, file_name)
-        line_list = get_info_from_txt(file_path)
-        for line in line_list:
-            if(len(line) != 5):
-                print('err ->', file_name)
-                continue
-            else:
-                size = int(get_size(*line[1:], (1280, 720)))
-                return_df.loc[len(return_df)] = [file_name, cls_dict[line[0]], size]
-
-        # print progress
-        process_count = process_count + 1
-        if(process_count % 2000 == 0):
-            print(f'progress is {round((process_count / len(filename_list) * 100), 2)}%')
-    
-    print(f'progress is {round((process_count / len(filename_list) * 100), 2)}%')
-    
-    return return_df
-
 def get_meta_df(true_label_path, pred_label_path, iou_th= 0.5, conf_th= 0.25):
     area1 = []
     area2 = []
@@ -304,15 +306,15 @@ def make_csv(category, exp_name, conf= 0.25, re_exp= False):
 
     # 압축파일의 경로, 압축 해제할 경로
     tar_file_path = rf'{teratum_result_path}\{category}\{exp_name}.tar'
-    extract_path = rf'{teratum_result_path}\{category}'
+    extract_path = r'..\..\..'
     
     tar = tarfile.open(tar_file_path)
     tar.extractall(path= extract_path)
     tar.close()
 
-    v8s_org_train = get_meta_df(ground_true_path, f'{extract_path}\{exp_name}', 0.5, conf)
+    meta_df = get_meta_df(ground_true_path, f'{extract_path}\{exp_name}', 0.5, conf)
     os.makedirs(rf'{data_result_path}\{category}', exist_ok= True)
-    v8s_org_train.to_csv(rf'{data_result_path}\{category}\{exp_name}_{conf}.csv')
+    meta_df.to_csv(rf'{data_result_path}\{category}\{exp_name}_{conf}.csv')
     shutil.rmtree(rf'{extract_path}\{exp_name}')
 
 def make_csv_by_dir(dir_name, conf= 0.25, re_exp= False):
