@@ -46,7 +46,7 @@ def train_and_save(category, name, ep, save_period, batch, result_dir, exist_ok,
     shutil.copy(f'Minions/colab/cfg/test.txt', f'/content/Nextchip_dataset/test.txt')
 
     model = YOLO(model_path)
-    model.train(data=rf'/content/Minions/colab/cfg/colab_{data}.yaml', exist_ok=exist_ok, epochs=ep, save_period=save_period, batch=batch, project=result_dir, name=name.split('.')[0])
+    model.train(data=rf'/content/Minions/colab/cfg/colab_{data}.yaml', exist_ok=exist_ok, epochs=ep, save_period=save_period, batch=batch, project=result_dir, name=name.split('.')[0], patience= 8)
 
     
     # 결과를 압축할 폴더 경로 지정
