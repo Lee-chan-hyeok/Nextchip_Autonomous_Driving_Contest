@@ -62,7 +62,7 @@ def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)',
 
     plt.show()
 
-def acc_graph_by_csv_list(csv_list, conf= 0.3):
+def acc_graph_by_csv_list(csv_list, conf= 0.5):
     y_list = []
     name_list = []
     
@@ -81,7 +81,7 @@ def acc_graph_by_csv_list(csv_list, conf= 0.3):
 
     compare_graph(x, y_list, name_list)
 
-def size_acc_graph_by_csv_list(csv_list, conf= 0.3):
+def size_acc_graph_by_csv_list(csv_list, conf= 0.5):
     for i in range(7):
         y_list = []
         name_list = []
