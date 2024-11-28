@@ -165,16 +165,23 @@ def edit_NmAP():
 def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
 
+    # name_list에 있는 이름들만 추출
     select_df = exp_list[exp_list['Model'].isin(name_list)].reset_index(drop= True)
+    
+    # name_list 순으로 정렬
+    select_df['Model'] = pd.Categorical(select_df['Model'], categories=name_list, ordered=True)
+    select_df = select_df.sort_values('Model').reset_index(drop=True)
+    
     labels = [
-        'N_mAP / G_mAP (%)',
+        # 'N_mAP / G_mAP (%)',
         'N_mAP', 
         # 'G_mAP',
         # 'params',
-        # 'FPS',
+        'FPS',
         ]
+    
     x_ticks = select_df['Model']
-    x_ticks = [item[19:-2] for item in x_ticks]
+    x_ticks = [item[4:-3] for item in x_ticks]
     bo = select_df['N_mAP / G_mAP (%)']
     N_mAP = select_df['N_mAP']
     G_mAP = select_df['G_mAP']
@@ -182,11 +189,11 @@ def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     FPS = select_df['FPS']
 
     y_data = [
-        bo,
+        # bo,
         N_mAP,
         # G_mAP,
         # params,
-        # FPS,
+        FPS,
         ]
     # y_data = [bo]
 
