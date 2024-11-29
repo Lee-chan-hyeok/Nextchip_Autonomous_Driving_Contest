@@ -162,7 +162,7 @@ def edit_NmAP():
     df['N_mAP / G_mAP (%)'] = round(df['N_mAP']/df['G_mAP'] * 100, 2)
     df.to_csv('../../documents/exp_list.csv')
 
-def exp_graph(name_list, x_title, y_title, title, y_lim = False):
+def exp_graph(x_title, y_title, title, name_list, labels = False, y_lim = False):
     exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
 
     # name_list에 있는 이름들만 추출
@@ -172,14 +172,6 @@ def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     select_df['Model'] = pd.Categorical(select_df['Model'], categories=name_list, ordered=True)
     select_df = select_df.sort_values('Model').reset_index(drop=True)
     
-    labels = [
-        # 'N_mAP / G_mAP (%)',
-        'N_mAP', 
-        'G_mAP',
-        # 'params',
-        # 'FPS',
-        ]
-    
     x_ticks = select_df['Model']
     x_ticks = [item[0:-3] for item in x_ticks]
     bo = select_df['N_mAP / G_mAP (%)']
@@ -188,13 +180,31 @@ def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     params = select_df['params']
     FPS = select_df['FPS']
 
-    y_data = [
-        # bo,
-        N_mAP,
-        G_mAP,
-        # params,
-        # FPS,
-        ]
+    if(labels):
+        # labels = labels
+        y_data = []
+        for label in labels:
+            data = select_df[label]
+            y_data.append(data)
+
+    else:
+        labels = [
+            'N_mAP / G_mAP (%)',
+            'N_mAP', 
+            'G_mAP',
+            'params',
+            'FPS',
+            ]
+
+        y_data = [
+            bo,
+            N_mAP,
+            G_mAP,
+            params,
+            FPS,
+            ]
+
+
     # y_data = [bo]
 
     if(y_lim):
