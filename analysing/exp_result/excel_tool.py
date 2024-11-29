@@ -162,7 +162,7 @@ def edit_NmAP():
     df['N_mAP / G_mAP (%)'] = round(df['N_mAP']/df['G_mAP'] * 100, 2)
     df.to_csv('../../documents/exp_list.csv')
 
-def exp_graph(x_title, y_title, title, name_list, labels = False, y_lim = False):
+def exp_graph(x_title, y_title, title, name_list, name_range, labels = False, y_lim = False):
     exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
 
     # name_list에 있는 이름들만 추출
@@ -173,7 +173,16 @@ def exp_graph(x_title, y_title, title, name_list, labels = False, y_lim = False)
     select_df = select_df.sort_values('Model').reset_index(drop=True)
     
     x_ticks = select_df['Model']
-    x_ticks = [item[0:-2] for item in x_ticks]
+    
+    new_x_ticks = []
+    for name in x_ticks:
+        pieces = name.split('_')
+        new_name = pieces[name_range[0]]
+        for item in pieces[name_range[0] + 1 : name_range[1] + 1]:
+            new_name = new_name + ' ' + item
+        
+        new_x_ticks.append(new_name)
+        
     # x_ticks = [item[0:-3] for item in x_ticks]
     bo = select_df['N_mAP / G_mAP (%)']
     N_mAP = select_df['N_mAP']
@@ -211,4 +220,4 @@ def exp_graph(x_title, y_title, title, name_list, labels = False, y_lim = False)
     if(y_lim):
         plt.ylim(y_lim)
 
-    method_graph.compare_graph(x_ticks, y_data, labels, x_title= x_title, y_title= y_title, title= title)
+    method_graph.compare_graph(new_x_ticks, y_data, labels, x_title= x_title, y_title= y_title, title= title)
