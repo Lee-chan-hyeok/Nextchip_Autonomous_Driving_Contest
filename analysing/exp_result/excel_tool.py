@@ -175,13 +175,13 @@ def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     labels = [
         # 'N_mAP / G_mAP (%)',
         'N_mAP', 
-        # 'G_mAP',
+        'G_mAP',
         # 'params',
-        'FPS',
+        # 'FPS',
         ]
     
     x_ticks = select_df['Model']
-    x_ticks = [item[4:-3] for item in x_ticks]
+    x_ticks = [item[0:-3] for item in x_ticks]
     bo = select_df['N_mAP / G_mAP (%)']
     N_mAP = select_df['N_mAP']
     G_mAP = select_df['G_mAP']
@@ -191,9 +191,9 @@ def exp_graph(name_list, x_title, y_title, title, y_lim = False):
     y_data = [
         # bo,
         N_mAP,
-        # G_mAP,
+        G_mAP,
         # params,
-        FPS,
+        # FPS,
         ]
     # y_data = [bo]
 
