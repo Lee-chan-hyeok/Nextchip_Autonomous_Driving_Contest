@@ -34,6 +34,8 @@ def make_onnx(category, model_name, pt_path= PT_PATH, re_exp= False):
                  simplify= False,
                  )
 
+    trash = dst.split('/')[-1]
+    os.makedirs(dst.replace(f'/{trash}', ''), exist_ok= True)
     shutil.copy(source, dst)
     os.remove(source)
     
