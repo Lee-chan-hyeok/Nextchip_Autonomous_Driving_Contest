@@ -109,10 +109,10 @@ def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
     size_acc_list = []
 
     # 전체에 대해 사이즈별 정확도
-    if(obj_num == 3):
-        pass
-    else:
-        size_acc_list.append(['all', *find_acc_by_size(df, 'all', section= section)])
+    # if(obj_num == 3):
+        # pass
+    # else:        
+    size_acc_list.append(['all', *find_acc_by_size(df, 'all', section= section)])
 
     # 클래스별로 사이즈별 정확도
     for cls in cls_list:
@@ -228,7 +228,7 @@ def make_size_Acc_by_cls(category, exp_name, conf= 0.5, obj_num= 3, graph_name= 
     elif(obj_num == 6):
         x = ['whole', 'small_s', 'small_m', 'small_l', 'medium', 'large']
     else:
-        print('obj_num은 3이나 5야 멍청아')
+        print('obj_num은 3, 4, 6이야 멍청아')
     
     y_list = find_acc_by_cls_and_size(result_df, obj_num= obj_num)
     
