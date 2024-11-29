@@ -64,38 +64,50 @@ def find_acc_by_class(df, cls_name):
     return [acc1, acc2, acc3]
 
 # 한 df에 대해 사이즈별로 정확도, cls 지정 가능
-def find_acc_by_size(df, cls_name, dt_condition= 'Detect', section= [460, 870, 1600, 6300, 921600]):
+def find_acc_by_size(df, cls_name, section, dt_condition= '_'):
     if(cls_name == 'all'):
         df_class = df
     else:
         df_class = df[df['class'] == cls_name]
     
-    num = len(df_class)
-    
+    # num = len(df_class)    
     # section = [600, 1700, 6500, 921600]
 
     # size별로 구간 구분
-    size0 = df_class[(df['size'] < section[0])]
-    size1 = df_class[(section[0] <= df['size']) & (df['size'] < section[1])]
-    size2 = df_class[(section[1] <= df['size']) & (df['size'] < section[2])]
-    size3 = df_class[(section[2] <= df['size']) & (df['size'] < section[3])]
-    size4 = df_class[section[3] <= df['size']]
+    # size0 = df_class[(df['size'] < section[0])]
+    # size1 = df_class[(section[0] <= df['size']) & (df['size'] < section[1])]
+    # size2 = df_class[(section[1] <= df['size']) & (df['size'] < section[2])]
+    # size3 = df_class[(section[2] <= df['size']) & (df['size'] < section[3])]
+    # size4 = df_class[section[3] <= df['size']]
+# 
+    # size0_acc = find_acc_by_class(size0, cls_name)[0]
+    # size1_acc = find_acc_by_class(size1, cls_name)[0]
+    # size2_acc = find_acc_by_class(size2, cls_name)[0]
+    # size3_acc = find_acc_by_class(size3, cls_name)[0]
+    # size4_acc = find_acc_by_class(size4, cls_name)[0]
 
-    size0_acc = find_acc_by_class(size0, cls_name)[0]
-    size1_acc = find_acc_by_class(size1, cls_name)[0]
-    size2_acc = find_acc_by_class(size2, cls_name)[0]
-    size3_acc = find_acc_by_class(size3, cls_name)[0]
-    size4_acc = find_acc_by_class(size4, cls_name)[0]
+    size_acc_list = [find_acc_by_class(df_class, cls_name)[0]]
 
-    return [size0_acc, size1_acc, size2_acc, size3_acc, size4_acc]
+    for i, item in enumerate(section[:-1]):
+        size_df = df_class[(item <= df['size']) & (df['size'] < section[i+1])]
+        size_acc = find_acc_by_class(size_df, cls_name)[0]
+        size_acc_list.append(size_acc)
 
-def find_acc_by_cls_and_size(df, dt_condition= '_', section= [460, 870, 1600, 6300, 921600]):
+    return size_acc_list
+
+def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
+    # section= [0, 460, 870, 1600, 6300, 921600]
+    if(obj_num == 3):
+        section= [0, 1600, 6300, 921600]
+    elif(obj_num == 5):
+        section= [0, 460, 870, 1600, 6300, 921600]
+
     cls_list = list(cls_dict.values())
     class_df_list = []
     size_acc_list = []
 
     # 전체에 대해 사이즈별 정확도
-    size_acc_list.append(['all', *find_acc_by_size(df, 'all')])
+    size_acc_list.append(['all', *find_acc_by_size(df, 'all', section= section)])
 
     # 클래스별로 사이즈별 정확도
     for cls in cls_list:
@@ -103,7 +115,7 @@ def find_acc_by_cls_and_size(df, dt_condition= '_', section= [460, 870, 1600, 63
 
     for idx in range(len(class_df_list)):
         # 클래스에 대해 사이즈별 정확도
-        size_acc = find_acc_by_size(class_df_list[idx], cls_list[idx], dt_condition, section)
+        size_acc = find_acc_by_size(class_df_list[idx], cls_list[idx], section= section)
         # 클래스명 추가
         size_acc.insert(0, cls_list[idx])
         size_acc_list.append(size_acc)
@@ -200,12 +212,18 @@ def make_Detect_Acc_by_class(category, exp_name, conf= 0.3, graph_name= '_', sho
 
     return x, y
 
-def make_size_Acc_by_cls(category, exp_name, conf= 0.3, graph_name= '_', show= False):
+def make_size_Acc_by_cls(category, exp_name, conf= 0.5, obj_num= 3, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'
     result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}_{conf}.csv', index_col= 0)
     
-    x = ['small_s', 'small_m', 'small_l', 'medium', 'large']
-    y_list = find_acc_by_cls_and_size(result_df)
+    if(obj_num == 3):
+        x = ['whole', 'small', 'medium', 'large']
+    elif(obj_num == 5):
+        x = ['whole', 'small_s', 'small_m', 'small_l', 'medium', 'large']
+    else:
+        print('obj_num은 3이나 5야 멍청아')
+    
+    y_list = find_acc_by_cls_and_size(result_df, obj_num= obj_num)
     
     for y in y_list:
         if(show == True):

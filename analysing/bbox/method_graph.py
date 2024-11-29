@@ -42,12 +42,13 @@ def rename_files(folder_path):
         print(f'{check_name} is in the folder, do not excute renaming')
 
 # y_data들을 리스트로 넣어주면 비교 그래프 생성
-def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by Class'):    
+def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by Class'):
     n = len(y_data)  # 데이터 세트의 개수
     num_classes = len(x_ticks)  # x축 레이블의 개수
     x_pos = np.arange(num_classes)  # x축 위치
     width = 0.8 / n  # 막대 너비 (막대 간 여유 공간 확보)
 
+    # print(labels)
     # 그래프 그리기
     for i, y in enumerate(y_data):
         plt.bar(x_pos + (i - (n - 1) / 2) * width, y, width, label=labels[i])
@@ -81,7 +82,7 @@ def acc_graph_by_csv_list(csv_list, conf= 0.5):
 
     compare_graph(x, y_list, name_list)
 
-def size_acc_graph_by_csv_list(csv_list, conf= 0.5):
+def size_acc_graph_by_csv_list(csv_list, obj_num= 3, conf= 0.5):
     for i in range(7):
         y_list = []
         name_list = []
@@ -90,7 +91,7 @@ def size_acc_graph_by_csv_list(csv_list, conf= 0.5):
             cat, name = csv.split('/')[-2:]
             name_list.append(name)
 
-            x, y = method_analysys.make_size_Acc_by_cls(cat, name, conf)
+            x, y = method_analysys.make_size_Acc_by_cls(cat, name, conf= conf, obj_num= obj_num)
             y_list.append(y[i][1:])
 
         # name에서 _tv등등 제거
@@ -98,5 +99,7 @@ def size_acc_graph_by_csv_list(csv_list, conf= 0.5):
             pass
         data = name_list[0].split('_')[-1]
         name_list = [item.replace(f'_{data}', '') for item in name_list]
+
+        # print(y_list)
         
         compare_graph(x, y_list, name_list, x_title= 'Object size', title= f'Acc by size [{y[i][0]}]')

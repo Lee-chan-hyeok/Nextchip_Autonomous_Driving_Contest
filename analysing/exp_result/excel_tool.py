@@ -173,7 +173,8 @@ def exp_graph(x_title, y_title, title, name_list, labels = False, y_lim = False)
     select_df = select_df.sort_values('Model').reset_index(drop=True)
     
     x_ticks = select_df['Model']
-    x_ticks = [item[0:-3] for item in x_ticks]
+    x_ticks = [item[0:-2] for item in x_ticks]
+    # x_ticks = [item[0:-3] for item in x_ticks]
     bo = select_df['N_mAP / G_mAP (%)']
     N_mAP = select_df['N_mAP']
     G_mAP = select_df['G_mAP']

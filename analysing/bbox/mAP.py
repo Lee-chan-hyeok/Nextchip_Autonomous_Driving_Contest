@@ -1,120 +1,147 @@
 import os
 import numpy as np
-from sklearn.metrics import average_precision_score
+from collections import defaultdict
+from sklearn.metrics import precision_recall_curve, average_precision_score
+# from shapely.geometry import Polygon
 
-# 1. Define IoU calculation function
-def compute_iou(box1, box2):
+def calculate_iou(bbox1, bbox2, img_width=1280, img_height=720):
     """
-    Compute Intersection over Union (IoU) for two bounding boxes.
-    box format: [x_min, y_min, x_max, y_max]
+    Calculate Intersection over Union (IoU) between two bounding boxes.
+    Bboxes should be in the format (x_min, y_min, x_max, y_max), and normalized.
     """
-    x1 = max(box1[0], box2[0])
-    y1 = max(box1[1], box2[1])
-    x2 = min(box1[2], box2[2])
-    y2 = min(box1[3], box2[3])
+    # 비정규화 (원본 이미지 크기 기준으로 계산)
+    x1_min, y1_min, x1_max, y1_max = bbox1[0] * img_width, bbox1[1] * img_height, bbox1[2] * img_width, bbox1[3] * img_height
+    x2_min, y2_min, x2_max, y2_max = bbox2[0] * img_width, bbox2[1] * img_height, bbox2[2] * img_width, bbox2[3] * img_height
     
-    intersection = max(0, x2 - x1) * max(0, y2 - y1)
-    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
-    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
-    union = area1 + area2 - intersection
-    return intersection / union if union > 0 else 0
-
-# 2. Categorize BBox size
-def categorize_bbox_size(bbox, size_thresholds=(32, 96)):
-    """
-    Categorize bounding boxes by size (Small, Medium, Large).
-    bbox: [x_min, y_min, x_max, y_max]
-    size_thresholds: Tuple of area thresholds for categorization.
-    """
-    area = (bbox[2] - bbox[0]) * (bbox[3] - bbox[1])  # Compute area
-    if area < size_thresholds[0] ** 2:
-        return "small"
-    elif area < size_thresholds[1] ** 2:
-        return "medium"
-    else:
-        return "large"
-
-# 3. Evaluate predictions against ground truths
-def evaluate_predictions(pred_file, gt_file, iou_threshold=0.5):
-    """
-    Evaluate mAP50 for each size category for a single image.
-    pred_file: Path to prediction file.
-    gt_file: Path to ground truth file.
-    """
-    predictions = np.loadtxt(pred_file, ndmin=2)  # Load predictions
-    ground_truths = np.loadtxt(gt_file, ndmin=2)  # Load ground truths
-
-    size_categories = {"small": [], "medium": [], "large": []}
-    for gt in ground_truths:
-        gt_size = categorize_bbox_size(gt[1:5])  # Extract BBox and categorize
-        size_categories[gt_size].append(gt)
+    # Calculate intersection area
+    xi_min = max(x1_min, x2_min)
+    yi_min = max(y1_min, y2_min)
+    xi_max = min(x1_max, x2_max)
+    yi_max = min(y1_max, y2_max)
     
-    category_ap = {}
-    for size, gts in size_categories.items():
-        preds = [p for p in predictions if categorize_bbox_size(p[1:5]) == size]
-        ap = compute_ap(preds, gts, iou_threshold)
-        category_ap[size] = ap
-    return category_ap
-
-# 4. Compute Average Precision (AP)
-def compute_ap(predictions, ground_truths, iou_threshold):
-    """
-    Compute Average Precision for a specific category.
-    """
-    if not ground_truths:
+    # Check for no overlap
+    if xi_min >= xi_max or yi_min >= yi_max:
         return 0.0
     
-    preds_sorted = sorted(predictions, key=lambda x: x[5], reverse=True)
-    matched = set()
-    tp = []
-    fp = []
+    # Compute the area of intersection
+    intersection_area = (xi_max - xi_min) * (yi_max - yi_min)
     
-    for pred in preds_sorted:
-        max_iou = 0
-        best_gt_idx = -1
-        for i, gt in enumerate(ground_truths):
-            if i in matched:
-                continue
-            iou = compute_iou(pred[1:5], gt[1:5])
-            if iou > max_iou:
-                max_iou = iou
-                best_gt_idx = i
+    # Compute the area of both bounding boxes
+    bbox1_area = (x1_max - x1_min) * (y1_max - y1_min)
+    bbox2_area = (x2_max - x2_min) * (y2_max - y2_min)
+    
+    # Compute the area of union
+    union_area = bbox1_area + bbox2_area - intersection_area
+    
+    # Compute IoU
+    return intersection_area / union_area
+
+# mAP 계산 함수
+def compute_map_by_size(pred_dir, gt_dir, num_classes=6, iou_threshold=0.5):
+    size_aps = defaultdict(list)
+
+    # 예측 및 Ground Truth 파일을 순차적으로 처리
+    for i in range(6883):  # 파일 개수에 맞게 조정하세요
+        pred_file = os.path.join(pred_dir, f"{i}.txt")
+        gt_file = os.path.join(gt_dir, f"{i}.txt")
+
+        # 예측 파일과 ground truth 파일 불러오기
+        predictions = load_predictions(pred_file)
+        ground_truths = load_ground_truth(gt_file)
+
+        # 각 크기별 AP 계산
+        for size in ['small', 'medium', 'large']:
+            gts = [gt for gt in ground_truths if categorize_bbox_size(gt[1:5]) == size]
+            preds = [pred for pred in predictions if categorize_bbox_size(pred[1:5]) == size]
+            if len(gts) > 0:
+                ap = compute_ap(preds, gts, num_classes, iou_threshold)
+                if ap:
+                    size_aps[size].append(np.mean(ap))
+                else:
+                    size_aps[size].append(0)
+
+    # 크기별 평균 mAP 계산 (빈 값은 0으로 처리)
+    mAP_by_size = {size: np.mean(aps) if len(aps) > 0 else 0 for size, aps in size_aps.items()}
+    return mAP_by_size
+
+# Ground truth 파일 로딩 함수 (예시, 각 텍스트 파일에서 bbox 정보를 읽어옵니다)
+def load_ground_truth(gt_file):
+    with open(gt_file, 'r') as f:
+        lines = f.readlines()
+    ground_truths = []
+    for line in lines:
+        items = line.strip().split()
+        class_id = int(items[0])
+        bbox = list(map(float, items[1:]))
+        ground_truths.append([class_id] + bbox)
+    return ground_truths
+
+# 예측 파일 로딩 함수 (prediction의 경우 형식이 동일하다고 가정)
+def load_predictions(pred_file):
+    with open(pred_file, 'r') as f:
+        lines = f.readlines()
+    predictions = []
+    for line in lines:
+        items = line.strip().split()
+        class_id = int(items[0])
+        bbox = list(map(float, items[1:5]))
+        score = float(items[4])  # confidence score
+        predictions.append([class_id] + bbox + [score])  # 클래스, bbox, confidence
+    return predictions
+
+# bbox 크기별로 분류하는 함수 (예시)
+def categorize_bbox_size(bbox):
+    img_width = 1280
+    img_height = 720
+    
+    # bbox 좌표 (x_min, y_min, x_max, y_max)
+    x_min, y_min, x_max, y_max = bbox
+    
+    # bbox의 너비와 높이 계산
+    width = (x_max - x_min)*1280
+    height = (y_max - y_min)*720
+    area = width * height
+    
+    # 이미지 기준으로 넓이에 따라 크기 분류
+    if area < 1600:  # small
+        return 'small'
+    elif area < 6300:  # medium
+        return 'medium'
+    else:  # large
+        return 'large'
+
+# 평균 정확도(AP) 계산 함수
+def compute_ap(preds, gts, num_classes, iou_threshold):
+    ap_per_class = []
+
+    for c in range(num_classes):
+        y_true = []  # Ground truth for class 'c'
+        y_score = []  # Prediction scores for class 'c'
+
+        for gt in gts:
+            if gt[0] == c:
+                y_true.append(1)
+            else:
+                y_true.append(0)
+
+        for pred in preds:
+            if pred[0] == c:
+                # Bounding box들 간의 IoU 계산
+                iou = calculate_iou(gt[1:5], pred[1:5])
+                if iou >= iou_threshold:
+                    y_score.append(pred[4])  # Prediction confidence score (5th index)
+
+        # Ensure both y_true and y_score have the same length
+        if len(y_true) == 0 or len(y_score) == 0:
+            continue  # Skip if no ground truths or predictions for this class
         
-        if max_iou >= iou_threshold:
-            tp.append(1)
-            fp.append(0)
-            matched.add(best_gt_idx)
-        else:
-            tp.append(0)
-            fp.append(1)
-    
-    tp_cumsum = np.cumsum(tp)
-    fp_cumsum = np.cumsum(fp)
-    precision = tp_cumsum / (tp_cumsum + fp_cumsum + 1e-16)
-    recall = tp_cumsum / len(ground_truths)
-    
-    return average_precision_score(recall, precision)
+        try:
+            # Compute precision-recall curve
+            precision, recall, _ = precision_recall_curve(y_true, y_score)
+            # Compute Average Precision (AP) from precision-recall curve
+            ap = average_precision_score(y_true, y_score)
+            ap_per_class.append(ap)
+        except ValueError:
+            ap_per_class.append(0.0)  # If error occurs (e.g., no positive predictions or ground truths), return 0.0
 
-# 5. Process all files
-def process_all_files(pred_dir, gt_dir, iou_threshold=0.5):
-    """
-    Process all prediction and ground truth files.
-    pred_dir: Directory containing prediction TXT files.
-    gt_dir: Directory containing ground truth TXT files.
-    """
-    all_files = os.listdir(gt_dir)
-    size_aps = {"small": [1600], "medium": [6300], "large": [921600]}
-
-    for file in all_files:
-        pred_file = os.path.join(pred_dir, file)
-        gt_file = os.path.join(gt_dir, file)
-        if not os.path.exists(pred_file):
-            continue
-
-        aps = evaluate_predictions(pred_file, gt_file, iou_threshold)
-        for size in size_aps.keys():
-            size_aps[size].append(aps[size])
-    
-    # Calculate average AP for each size category
-    avg_aps = {size: np.mean(size_aps[size]) for size in size_aps.keys()}
-    return avg_aps
+    return ap_per_class
