@@ -97,16 +97,21 @@ def find_acc_by_size(df, cls_name, section, dt_condition= '_'):
 
 def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
     # section= [0, 460, 870, 1600, 6300, 921600]
-    if(obj_num == 3):
+    if(obj_num == 4):
         section= [0, 1600, 6300, 921600]
-    elif(obj_num == 5):
+    elif(obj_num == 6):
         section= [0, 460, 870, 1600, 6300, 921600]
+    elif(obj_num == 3):
+        section= [0, 460, 870, 1600]
 
     cls_list = list(cls_dict.values())
     class_df_list = []
     size_acc_list = []
 
     # 전체에 대해 사이즈별 정확도
+    # if(obj_num == 3):
+        # pass
+    # else:        
     size_acc_list.append(['all', *find_acc_by_size(df, 'all', section= section)])
 
     # 클래스별로 사이즈별 정확도
@@ -216,12 +221,14 @@ def make_size_Acc_by_cls(category, exp_name, conf= 0.5, obj_num= 3, graph_name= 
     csv_path = r'..\..\result\data_result'
     result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}_{conf}.csv', index_col= 0)
     
-    if(obj_num == 3):
+    if(obj_num == 4):
         x = ['whole', 'small', 'medium', 'large']
-    elif(obj_num == 5):
+    elif(obj_num == 3):
+        x = ['small_s', 'small_m', 'small_l']
+    elif(obj_num == 6):
         x = ['whole', 'small_s', 'small_m', 'small_l', 'medium', 'large']
     else:
-        print('obj_num은 3이나 5야 멍청아')
+        print('obj_num은 3, 4, 6이야 멍청아')
     
     y_list = find_acc_by_cls_and_size(result_df, obj_num= obj_num)
     
