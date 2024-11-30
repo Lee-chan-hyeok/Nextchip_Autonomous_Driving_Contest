@@ -221,3 +221,40 @@ def exp_graph(x_title, y_title, title, name_list, name_range, labels = False, y_
         plt.ylim(y_lim)
 
     method_graph.compare_graph(new_x_ticks, y_data, labels, x_title= x_title, y_title= y_title, title= title)
+
+def exp_graph_modified(x_title, y_title, title, name_list, name_range, labels = False, y_lim = False):
+    exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
+
+    # name_list에 있는 이름들만 추출
+    select_df = exp_list[exp_list['Model'].isin(name_list)].reset_index(drop= True)
+    
+    # name_list 순으로 정렬
+    select_df['Model'] = pd.Categorical(select_df['Model'], categories=name_list, ordered=True)
+    select_df = select_df.sort_values('Model').reset_index(drop=True)
+    
+    model_names = select_df['Model']
+    
+    new_names = []
+    for name in model_names:
+        pieces = name.split('_')
+        new_name = pieces[name_range[0]]
+        for item in pieces[name_range[0] + 1 : name_range[1] + 1]:
+            new_name = new_name + ' ' + item
+        
+        new_names.append(new_name)
+
+    y_data = []
+    for name in model_names:
+        row = select_df[select_df['Model'] == name]
+        
+        y = []
+        for label in labels:
+            val = row[label].iloc[0]
+            y.append(val)
+
+        y_data.append(y)
+
+    if(y_lim):
+        plt.ylim(y_lim)
+
+    method_graph.compare_graph(labels, y_data, new_names, x_title= x_title, y_title= y_title, title= title)
