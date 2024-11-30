@@ -162,7 +162,7 @@ def edit_NmAP():
     df['N_mAP / G_mAP (%)'] = round(df['N_mAP']/df['G_mAP'] * 100, 2)
     df.to_csv('../../documents/exp_list.csv')
 
-def exp_graph(x_title, y_title, title, name_list, name_range, labels = False, y_lim = False):
+def exp_graph(x_title, y_title, title, name_list, name_range= [0, -1], labels = False, y_lim = False):
     exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
 
     # name_list에 있는 이름들만 추출
@@ -222,7 +222,7 @@ def exp_graph(x_title, y_title, title, name_list, name_range, labels = False, y_
 
     method_graph.compare_graph(new_x_ticks, y_data, labels, x_title= x_title, y_title= y_title, title= title)
 
-def exp_graph_modified(x_title, y_title, title, name_list, name_range, labels = False, y_lim = False):
+def exp_graph_modified(x_title, y_title, title, name_list, name_range= [0, -1], labels = False, y_lim = False):
     exp_list = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
 
     # name_list에 있는 이름들만 추출
