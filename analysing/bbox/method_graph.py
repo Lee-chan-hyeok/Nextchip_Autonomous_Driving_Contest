@@ -93,10 +93,8 @@ def size_acc_graph_by_csv_list(csv_list, obj_num= 3, conf= 0.5):
 
             x, y = method_analysys.make_size_Acc_by_cls(cat, name, conf= conf, obj_num= obj_num)
             if(obj_num == 3):
-                print(y[i])
                 y_list.append(y[i][2:])
             else:
-                print(y[i])
                 y_list.append(y[i][1:])
 
         # name에서 _tv등등 제거
