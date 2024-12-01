@@ -10,7 +10,12 @@ import matplotlib.pyplot as plt
 import method_graph
 
 from pathlib import Path
+# from ultralytics import YOLO
+import sys
+sys.path.append("C:/Nextchip/code/ult")
+import ultralytics
 from ultralytics import YOLO
+
 from torchinfo import summary
 
 # PATH
