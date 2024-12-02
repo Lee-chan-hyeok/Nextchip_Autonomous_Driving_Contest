@@ -28,21 +28,88 @@ def ratio_by_cls(df, data_set, num_or_ratio = 'Ratio', show= False):
         plt.bar(x_labels, num_list, color='royalblue', edgecolor='royalblue')
 
         plt.xlabel('Class')
-        plt.ylabel('Number' if num_or_ratio != 'Ratio' else 'Ratio (%)')
+        plt.ylabel('Number' if num_or_ratio != 'Ratio' else 'Ratio (%)', rotation= 0)
         if(num_or_ratio == 'Ratio'):
-            title = f'{data_set} Ratio by Class'
+            title = f'Instance Ratio by Class : {data_set} '
         elif(num_or_ratio == 'Num'):
-            title = f'{data_set} Num by Class'
+            title = f'Instance Num by Class : {data_set}'
         plt.title(title)
         # plt.xticks(fontsize=12)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.tight_layout()
         plt.show()
+
+        return num_list
+    
     else:
         return num_list
-
     
+# 데이터셋의 사이즈별 히스토그램을 클래스 종류별로 출력
+def size_ratio_by_cls(df, data_set, num_or_ratio= 'Ratio', obj_num= 3, show= True):
+    if(obj_num == 4):
+        section= [0, 1600, 6300, 921600]
+    elif(obj_num == 6):
+        section= [0, 460, 870, 1600, 6300, 921600]
+    elif(obj_num == 3):
+        section= [0, 460, 870, 1600]
+        
+    cls_list = list(cls_dict.values())
+    class_df_list = [df]
+    size_ratio_list = []
 
+    for cls in cls_list:
+        class_df_list.append(df[df['class'] == cls])
+
+    # class_df 별로 실행
+    for idx in range(len(class_df_list)):
+        class_df = class_df_list[idx]
+        total = len(class_df)
+
+        bar_list = []
+        for i, item in enumerate(section[:-1]):
+            bar = len(class_df[(item <= class_df['size']) & (class_df['size'] < section[i+1])])
+            bar_list.append(bar)
+        
+        # 오류 검사
+        if(total != sum(bar_list)):
+            print('num err!!!')
+
+        size_ratio = [round((item/total)*100, 2) for item in bar_list]
+        if(idx == 0):
+            size_ratio.insert(0, '')
+        else:
+            size_ratio.insert(0, cls_list[idx - 1])
+
+        size_ratio_list.append(size_ratio)
+
+        if(show):
+            if(obj_num == 3):
+                x = ['small_s', 'small_m', 'small_l']
+            elif(obj_num == 4):
+                x = ['small', 'medium', 'large']
+            elif(obj_num == 6):
+                x = ['small_s', 'small_m', 'small_l', 'medium', 'large']
+            else:
+                pass
+            
+            y = bar_list
+            if(num_or_ratio == 'Ratio'):
+                y = [round((item/total)*100, 2) for item in y]
+            
+            plt.bar(x, y, color='royalblue')
+            plt.xlabel('Object size (pixel)')
+            plt.ylabel('Num' if num_or_ratio == 'Num' else 'Ratio (%)', rotation= 0)
+            
+            if(('Train' in data_set) | ('Valid' in data_set) | ('Test' in data_set)):
+                plt.title(f'{size_ratio[0]} Histogram by size : {data_set}')
+            else:
+                plt.title(f'{size_ratio[0]} Histogram by size')
+
+            plt.grid(axis='y', linestyle='--', alpha=0.7)
+            
+            plt.show()
+
+    return size_ratio_list
 
 # 한 df에 대해 정확도, cls 지정 가능
 def find_acc_by_class(df, cls_name):
@@ -69,22 +136,6 @@ def find_acc_by_size(df, cls_name, section, dt_condition= '_'):
         df_class = df
     else:
         df_class = df[df['class'] == cls_name]
-    
-    # num = len(df_class)    
-    # section = [600, 1700, 6500, 921600]
-
-    # size별로 구간 구분
-    # size0 = df_class[(df['size'] < section[0])]
-    # size1 = df_class[(section[0] <= df['size']) & (df['size'] < section[1])]
-    # size2 = df_class[(section[1] <= df['size']) & (df['size'] < section[2])]
-    # size3 = df_class[(section[2] <= df['size']) & (df['size'] < section[3])]
-    # size4 = df_class[section[3] <= df['size']]
-# 
-    # size0_acc = find_acc_by_class(size0, cls_name)[0]
-    # size1_acc = find_acc_by_class(size1, cls_name)[0]
-    # size2_acc = find_acc_by_class(size2, cls_name)[0]
-    # size3_acc = find_acc_by_class(size3, cls_name)[0]
-    # size4_acc = find_acc_by_class(size4, cls_name)[0]
 
     size_acc_list = [find_acc_by_class(df_class, cls_name)[0]]
 
@@ -96,7 +147,6 @@ def find_acc_by_size(df, cls_name, section, dt_condition= '_'):
     return size_acc_list
 
 def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
-    # section= [0, 460, 870, 1600, 6300, 921600]
     if(obj_num == 4):
         section= [0, 1600, 6300, 921600]
     elif(obj_num == 6):
@@ -108,10 +158,6 @@ def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
     class_df_list = []
     size_acc_list = []
 
-    # 전체에 대해 사이즈별 정확도
-    # if(obj_num == 3):
-        # pass
-    # else:        
     size_acc_list.append(['all', *find_acc_by_size(df, 'all', section= section)])
 
     # 클래스별로 사이즈별 정확도
@@ -126,63 +172,6 @@ def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
         size_acc_list.append(size_acc)
 
     return size_acc_list
-
-# df에 대해 클래스 별로 사이즈별 히스토그램 출력
-def find_size_ratio_by_cls(df, data_set, num_or_ratio= 'Ratio', show= True, section= [460, 870, 1600, 6300]):
-    cls_list = list(cls_dict.values())
-    class_df_list = [df]
-    size_ratio_list = []
-
-    for cls in cls_list:
-        class_df_list.append(df[df['class'] == cls])
-
-    # class_df 별로 실행
-    for idx in range(len(class_df_list)):
-        class_df = class_df_list[idx]
-        total = len(class_df)
-
-        bar1 = len(class_df[class_df['size'] < section[0]])
-        bar2 = len(class_df[(section[0] <= class_df['size']) & (class_df['size'] < section[1])])
-        bar3 = len(class_df[(section[1] <= class_df['size']) & (class_df['size'] < section[2])])
-        bar4 = len(class_df[(section[2] <= class_df['size']) & (class_df['size'] < section[3])])
-        bar5 = len(class_df[section[3] <= class_df['size']])
-        
-        # 오류 검사
-        if(total != bar1 + bar2 + bar3 + bar4 + bar5):
-            print('num err!!!')
-
-        size_ratio = [bar1/total, bar2/total, bar3/total, bar4/total, bar5/total]
-        size_ratio = [round(item*100, 4) for item in size_ratio]
-
-        if(idx == 0):
-            size_ratio.insert(0, 'all')
-        else:
-            size_ratio.insert(0, cls_list[idx - 1])
-        size_ratio_list.append(size_ratio)
-
-        if(show):
-            x = ['small_s', 'small_m', 'small_l', 'medium', 'large']
-            
-            y = [bar1, bar2, bar3, bar4, bar5]
-            if(num_or_ratio == 'Ratio'):
-                y = [bar1/total, bar2/total, bar3/total, bar4/total, bar5/total]
-                y = [round(item*100, 4) for item in y]
-            
-            plt.bar(x, y, color='royalblue')
-            
-            plt.xlabel('Object size (pixel)')
-            plt.ylabel('Num' if num_or_ratio == 'Num' else 'Ratio (%)')
-            
-            if(('Train' in data_set) | ('Valid' in data_set) | ('Test' in data_set)):
-                plt.title(f'{data_set} : {size_ratio[0]} Histogram by size')
-            else:
-                plt.title(f'{size_ratio[0]} Histogram by size')
-
-            plt.grid(axis='y', linestyle='--', alpha=0.7)
-            
-            plt.show()
-
-    return size_ratio_list
 
 def make_Detect_Acc_by_class(category, exp_name, conf= 0.3, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'

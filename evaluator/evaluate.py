@@ -89,7 +89,8 @@ class Evaluator(BaseValidator):
             if len(del_row) > 0:
                 new_pred = np.delete(new_pred, del_row, axis=0)
             
-            new_pred = torch.from_numpy(new_pred).round()
+            # new_pred = torch.from_numpy(new_pred).round()
+            new_pred = torch.from_numpy(new_pred)
             keep = ops.nms(new_pred[:, :4], new_pred[:, 4], 0.6)
             preds.append(new_pred[keep])
 
