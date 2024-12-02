@@ -17,12 +17,6 @@ output_path = r'../../output'
 # VAL_PATH = r'../result/val_result'
 # CSV_PATH = r'../documents/exp_list.csv'
 
-def sample(cat, name):
-    model = YOLO(f'{PT_PATH}/{cat}/{name}.pt')
-    tar_path = rf'{RESULT_PATH}/{cat}'
-
-    results = model.predict(source= src, iou= 0.5, save_txt= True, save_conf= True, project= output_path, name= name, conf= 0.001)
-
 def make_pred(cat, name, re_exp= False):
     model = YOLO(f'{PT_PATH}/{cat}/{name}.pt')
     tar_path = rf'{RESULT_PATH}/{cat}'

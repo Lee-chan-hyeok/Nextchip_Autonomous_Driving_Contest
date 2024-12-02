@@ -151,6 +151,7 @@ def edit_NmAP():
     df = pd.read_csv('../../documents/exp_list.csv', index_col= 0)
     
     NmAP_path = '../../result/NmAP50_result'
+    GmAP_path = '../../result/GmAP50_result'
     txt_list = []
 
     cat_list = os.listdir(NmAP_path)
@@ -163,6 +164,7 @@ def edit_NmAP():
     for txt in txt_list:
         cat, name = txt.split('/')
         df.loc[df['Model'] == name[:-4], 'N_mAP'] = extract_NmAP50(f'{NmAP_path}/{txt}')
+        df.loc[df['Model'] == name[:-4], 'G_mAP'] = extract_NmAP50(f'{GmAP_path}/{txt}')
 
     df['N_mAP / G_mAP (%)'] = round(df['N_mAP']/df['G_mAP'] * 100, 2)
     df.to_csv('../../documents/exp_list.csv')
