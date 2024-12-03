@@ -53,6 +53,7 @@ def size_ratio_by_cls(df, data_set, num_or_ratio= 'Ratio', obj_num= 3, show= Tru
     elif(obj_num == 3):
         section= [0, 460, 870, 1600]
         
+        
     cls_list = list(cls_dict.values())
     class_df_list = [df]
     size_ratio_list = []
@@ -153,6 +154,8 @@ def find_acc_by_cls_and_size(df, dt_condition= '_', obj_num= 3):
         section= [0, 460, 870, 1600, 6300, 921600]
     elif(obj_num == 3):
         section= [0, 460, 870, 1600]
+    elif(obj_num == 2):
+        section= [0, 1600]
 
     cls_list = list(cls_dict.values())
     class_df_list = []
@@ -206,7 +209,7 @@ def make_Detect_Acc_by_class(category, exp_name, conf= 0.3, graph_name= '_', sho
 
     return x, y
 
-def make_size_Acc_by_cls(category, exp_name, conf= 0.5, obj_num= 3, graph_name= '_', show= False):
+def make_size_Acc_by_cls(category, exp_name, conf= 0.5, obj_num= 2, graph_name= '_', show= False):
     csv_path = r'..\..\result\data_result'
     result_df = pd.read_csv(rf'{csv_path}\{category}\{exp_name}_{conf}.csv', index_col= 0)
     
@@ -216,6 +219,8 @@ def make_size_Acc_by_cls(category, exp_name, conf= 0.5, obj_num= 3, graph_name= 
         x = ['small_s', 'small_m', 'small_l']
     elif(obj_num == 6):
         x = ['whole', 'small_s', 'small_m', 'small_l', 'medium', 'large']
+    elif(obj_num == 2):
+        x = ['whole', 'small']
     else:
         print('obj_num은 3, 4, 6이야 멍청아')
     

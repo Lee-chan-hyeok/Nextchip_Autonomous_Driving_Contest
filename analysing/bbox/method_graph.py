@@ -61,6 +61,7 @@ def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)',
     plt.legend(framealpha=0)  # 범례 추가
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
+    plt.ylim(0, 60)
     plt.show()
 
 def acc_graph_by_csv_list(csv_list, conf= 0.5):
@@ -82,7 +83,7 @@ def acc_graph_by_csv_list(csv_list, conf= 0.5):
 
     compare_graph(x, y_list, name_list)
 
-def size_acc_graph_by_csv_list(csv_list, obj_num= 3, conf= 0.5):
+def size_acc_graph_by_csv_list(csv_list, obj_num= 4, conf= 0.5):
     for i in range(7):
         y_list = []
         name_list = []
