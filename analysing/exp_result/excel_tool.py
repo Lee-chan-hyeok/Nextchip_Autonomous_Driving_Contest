@@ -136,6 +136,9 @@ def val_allll():
             val_all_by_dir(folder_name)
 
 def extract_NmAP50(file_path):
+    if(os.path.exists(file_path) == False):
+        return 0
+    
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
     
@@ -145,7 +148,7 @@ def extract_NmAP50(file_path):
         # line3의 세 번째 값
         NmAP50 = float(lines[2].split('|')[2])
         return round(NmAP50 * 100, 2)  # 0-based index로 세 번째 값 선택
-    return None  # 줄이 부족하면 None 반환
+    return 0  # 줄이 부족하면 None 반환
 
 def edit_NmAP():
     df = pd.read_csv('../../documents/exp_list.csv', index_col= 0)

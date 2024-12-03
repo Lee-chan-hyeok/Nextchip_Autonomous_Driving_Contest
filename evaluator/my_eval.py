@@ -1,6 +1,7 @@
 import os
 
 teratum_result_path = '../result/teratum_result'
+pred_result_path = '../result/pred_result'
 
 def my_eval(cat, name, re_exp= False):
     # 저장 목표
@@ -52,7 +53,7 @@ def my_eval_gpu(cat, name, re_exp= False):
     print(f'{cat} - {name} is done')
 
 def eval_by_dir_gpu(dir_name, re_exp= False):
-    name_list = os.listdir(f'{teratum_result_path}/{dir_name}')
+    name_list = os.listdir(f'{pred_result_path}/{dir_name}')
 
     for exp_name in name_list:
         if(exp_name[-4:] == '.tar'):
@@ -60,7 +61,7 @@ def eval_by_dir_gpu(dir_name, re_exp= False):
             my_eval_gpu(dir_name, exp_name[:-4], re_exp= re_exp)
 
 def eval_allll_gpu(re_exp= False):
-    category_list = os.listdir(teratum_result_path)
+    category_list = os.listdir(pred_result_path)
 
     for category in category_list:
         if(category == 'undefined'):
