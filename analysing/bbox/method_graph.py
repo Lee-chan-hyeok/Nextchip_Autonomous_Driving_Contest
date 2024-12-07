@@ -42,7 +42,8 @@ def rename_files(folder_path):
         print(f'{check_name} is in the folder, do not excute renaming')
 
 # y_data들을 리스트로 넣어주면 비교 그래프 생성
-def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)', title= 'Acc by Class'):
+def compare_graph(x_ticks, y_data, labels, x_title='Class', y_title='Acc\n(%)', title='Acc by Class'):
+
     
     n = len(y_data)  # 데이터 세트의 개수
     num_classes = len(x_ticks)  # x축 레이블의 개수
@@ -61,7 +62,7 @@ def compare_graph(x_ticks, y_data, labels, x_title= 'Class', y_title= 'Acc (%)',
     plt.legend(framealpha=0)  # 범례 추가
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
-    plt.ylim(0, 60)
+    plt.ylim(20, 62)
     plt.show()
 
 def acc_graph_by_csv_list(csv_list, conf= 0.5):
