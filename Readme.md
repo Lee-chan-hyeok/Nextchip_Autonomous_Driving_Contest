@@ -59,7 +59,7 @@ Nextchip사에서 제공받은 train, valid, test set 사용
 
 ### 4. 학습 결과
 - loss graph
-    <img src="./images/results.png" height="400">
+    <img src="./images/results.png">
 
 - PR Curve
     <img src="./images/PR_curve.png">
