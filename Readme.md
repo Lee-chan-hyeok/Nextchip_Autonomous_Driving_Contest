@@ -22,7 +22,7 @@ Nextchip사에서 제공받은 train, valid, test set 사용
 ### 3. 최종 모델 학습
 - 학습 방법
     - [Ultralytics](https://github.com/ultralytics/ultralytics)의 YOLOv8으로 모델 학습 <br>
-    - 모델 구조가 선언되어 있는 yaml 파일을 수정해가며 학습을 진행하기 위해 github에서 Ultralytics를 clone 받아서 사용 <br>
+    -> (모델 구조가 선언되어 있는 yaml 파일을 수정해가며 학습을 진행하기 위해 github에서 Ultralytics를 clone 받아서 사용) <br>
 
 - Hyperparameter
     ```
