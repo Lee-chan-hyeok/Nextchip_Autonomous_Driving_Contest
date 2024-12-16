@@ -67,7 +67,7 @@ Nextchip사에서 제공받은 train, valid, test set 사용
 
 ## 모델 Architecture 분석
 ### Model Architecture
-<img src="./images/model_architecture2.png">
+<img src="./images/model_architecture.png">
 
 - **Backbone**<br>
     백본은 Conv 모듈과 C2f 모듈로 구성되어 있는 Top-down 형식이다.<br>
