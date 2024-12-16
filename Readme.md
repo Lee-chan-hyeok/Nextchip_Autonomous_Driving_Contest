@@ -66,3 +66,35 @@ Nextchip사에서 제공받은 train, valid, test set 사용
 
 
 ## 모델 Architecture 분석
+### Model Architecture
+<img src="./images/model_architecture2.png">
+
+- **Backbone**<br>
+    백본은 Conv 모듈과 C2f 모듈로 구성되어 있다.<br>
+    640x640 size 이미지가 처음 Input으로 들어온다.<br>
+    <u>**Conv**</u> 모듈은 합성곱 연산으로 Image에서 특징 추출과 다운샘플링 역할을 한다.<br>
+    이때, Conv 모듈의 kernel, stride, padding의 값이 3, 2, 1이기 때문에 output size는 다음 공식과 같이 계산된다.<br>
+
+    <img src="./images/calculate.png" width=300><br>
+
+    줄어든 Image는 C2f 모듈을 지나 더 많은 특징을 추출한다.<br>
+    <u>**C2f**</u> 모듈은 Image의 정보를 유지하면서 Bottleneck을 통해 특징 강화와 정보를 병합하는 역할을 한다.<br>
+    각 모듈을 지나 Image size는 20x20까지 Downsampling 된다.<br>
+    80x80, 40x40, 20x20 size의 Layer는 각각 P3, P2, P1 이라고 부르게 된다.<br>
+    Backbone의 마지막 SPPF Layer를 거치면서 다중 스케일 특징 추출을 통해 모델이 다양한 객체 크기에 대해 높은 성능을 발휘하도록 한다.<br>
+    
+
+    
+
+    I : Input size<br>
+    K : Kernel size<br>
+    S : Stride<br>
+    P : Padding
+
+
+
+- Neck<br>
+    ``` 넥의 구조 기술 ```
+
+- Head<br>
+    ``` 헤드의 구조 기술 ```
