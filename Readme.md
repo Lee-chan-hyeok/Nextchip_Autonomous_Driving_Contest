@@ -70,31 +70,39 @@ Nextchip사에서 제공받은 train, valid, test set 사용
 <img src="./images/model_architecture2.png">
 
 - **Backbone**<br>
-    백본은 Conv 모듈과 C2f 모듈로 구성되어 있다.<br>
+    백본은 Conv 모듈과 C2f 모듈로 구성되어 있는 Top-down 형식이다.<br>
     640x640 size 이미지가 처음 Input으로 들어온다.<br>
     <u>**Conv**</u> 모듈은 합성곱 연산으로 Image에서 특징 추출과 다운샘플링 역할을 한다.<br>
     이때, Conv 모듈의 kernel, stride, padding의 값이 3, 2, 1이기 때문에 output size는 다음 공식과 같이 계산된다.<br>
 
     <img src="./images/calculate.png" width=300><br>
-
+    > I : Input size<br>
+    > K : Kernel size<br>
+    > S : Stride<br>
+    > P : Padding
+    
     줄어든 Image는 C2f 모듈을 지나 더 많은 특징을 추출한다.<br>
     <u>**C2f**</u> 모듈은 Image의 정보를 유지하면서 Bottleneck을 통해 특징 강화와 정보를 병합하는 역할을 한다.<br>
     각 모듈을 지나 Image size는 20x20까지 Downsampling 된다.<br>
     80x80, 40x40, 20x20 size의 Layer는 각각 P3, P2, P1 이라고 부르게 된다.<br>
     Backbone의 마지막 SPPF Layer를 거치면서 다중 스케일 특징 추출을 통해 모델이 다양한 객체 크기에 대해 높은 성능을 발휘하도록 한다.<br>
+
+- **Neck**<br>
+    넥은 백본에서 추출한 특징들을 결합하는 역할을 하며 다음과 같은 PANet 형식이다.<br>
     
+    <img src="./images/panet.png" height=300><br>
+    
+    20x20 size의 이미지를 하나는 Detect단 앞으로 보내고 하나는 Upsampling한다.<br>
+    Upsampling한 이미지는 40x40 size 이미지와 Concatenation하여 Feature 정보를 합친다.<br>
+    80x80 size 이미지도 이러한 과정을 거친다.<br>
+    80x80 size 이미지는 C2f 모듈을 거쳐 하나는 Head로 보내기 위해 Detect 모듈로 보내고 하나는 Conv 모듈을 거쳐 Downsampling하여 40x40 size 이미지와 Concatenation한다.<br>
+    40x40, 20x20 size 이미지도 동일한 과정을 거친다.<br>
+    다만 Neck에서의 C2f 모듈의 인자로 `shortcut=False`를 주기 때문에 `skip connection`이 적용되지 않는다. (Bottleneck X)
+
+- **Head**<br>
+    헤드는 넥에서 조합한 Feature를 받아 Object의 위치와 Class를 예측한다.<br>
+    BBox(Bounding Box) Loss를 구할 때 2번의 Conv 모듈과 torch.nn.Conv2d 모듈을 한번 거친다.<br>
+    이때 `c = 4 * reg_max` Bounding Box의 좌표를 주어 BBox 좌표를 예측한다.<br>
+    Class Loss를 구할 때도 마찬가지로 동일한 과정을 거치고 `c = nc`로 클래스 개수를 주어 클래스를 예측한다.<br>
 
     
-
-    I : Input size<br>
-    K : Kernel size<br>
-    S : Stride<br>
-    P : Padding
-
-
-
-- Neck<br>
-    ``` 넥의 구조 기술 ```
-
-- Head<br>
-    ``` 헤드의 구조 기술 ```
